@@ -1,0 +1,70 @@
+{
+  "artifacts": [
+    {
+      "id": "service-health",
+      "title": "Service Health Dashboard",
+      "description": "Latency and throughput overview with switchable 24h/7d/30d ranges and a live refresh counter.",
+      "project": "Narya",
+      "category": "Dashboard",
+      "tags": ["dashboard", "latency", "monitoring", "realtime"],
+      "path": "artifacts/narya/dashboards/service-health.html",
+      "createdAt": "2026-08-01",
+      "updatedAt": "2026-09-20"
+    },
+    {
+      "id": "permission-audit",
+      "title": "Permission Audit",
+      "description": "Role and permission review with sortable columns and a text filter, flagged by severity.",
+      "project": "Narya",
+      "category": "Security",
+      "tags": ["iam", "rbac", "security", "audit"],
+      "path": "artifacts/narya/security/permission-audit.html",
+      "createdAt": "2026-08-05",
+      "updatedAt": "2026-09-22"
+    },
+    {
+      "id": "sprint-progress",
+      "title": "Sprint 14 Progress",
+      "description": "Task completion bars and a burndown chart for the current sprint.",
+      "project": "Narya",
+      "category": "Progress",
+      "tags": ["sprint", "agile", "progress"],
+      "path": "artifacts/narya/progress/sprint-progress.html",
+      "createdAt": "2026-08-10",
+      "updatedAt": "2026-09-24"
+    },
+    {
+      "id": "system-design",
+      "title": "Platform System Design",
+      "description": "High-level service topology diagram with component notes for the platform architecture.",
+      "project": "Infra",
+      "category": "Architecture",
+      "tags": ["architecture", "infra", "iam", "diagram"],
+      "path": "artifacts/infra/architecture/system-design.html",
+      "createdAt": "2026-08-15",
+      "updatedAt": "2026-09-15"
+    },
+    {
+      "id": "developer-onboarding",
+      "title": "Developer Onboarding",
+      "description": "Interactive first-week checklist with live completion tracking.",
+      "project": "ERP",
+      "category": "Onboarding",
+      "tags": ["onboarding", "checklist", "erp"],
+      "path": "artifacts/erp/onboarding/developer-onboarding.html",
+      "createdAt": "2026-08-20",
+      "updatedAt": "2026-09-10"
+    },
+    {
+      "id": "api-conventions",
+      "title": "API Conventions",
+      "description": "Reference documentation for internal REST conventions, request/response shapes, and error formats.",
+      "project": "ERP",
+      "category": "Documentation",
+      "tags": ["api", "documentation", "rest"],
+      "path": "artifacts/erp/documentation/api-conventions.html",
+      "createdAt": "2026-08-25",
+      "updatedAt": "2026-09-26"
+    }
+  ]
+}

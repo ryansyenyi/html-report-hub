@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Permission Audit</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --text: #1a1d23;
+    --muted: #5b6270;
+    --border: #e2e5ea;
+    --accent: #2f6feb;
+    --sev-low: #1a9e6b;
+    --sev-med: #c98a1a;
+    --sev-high: #d1425a;
+    --row-hover: #eef1f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --panel: #1c1f26;
+      --text: #e8eaf0;
+      --muted: #9aa1b0;
+      --border: #2b2f38;
+      --accent: #6ea1ff;
+      --sev-low: #4fd39a;
+      --sev-med: #ecb75f;
+      --sev-high: #ff8098;
+      --row-hover: #232733;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 0.9rem; }
+  input[type="text"] {
+    font: inherit;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 14px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  th {
+    cursor: pointer;
+    user-select: none;
+    color: var(--muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  th .arrow { font-size: 0.7rem; margin-left: 4px; opacity: 0.6; }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr:last-child td { border-bottom: none; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+  }
+  .badge.low { background: var(--sev-low); }
+  .badge.medium { background: var(--sev-med); }
+  .badge.high { background: var(--sev-high); }
+  .count { color: var(--muted); font-size: 0.8rem; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <h1>Permission Audit</h1>
+  <p class="sub">Narya &middot; IAM role &amp; permission review (fictional data)</p>
+
+  <input type="text" id="filter" placeholder="Filter by role, resource, or permission..." />
+
+  <table id="audit-table">
+    <thead>
+      <tr>
+        <th data-key="role">Role<span class="arrow"></span></th>
+        <th data-key="resource">Resource<span class="arrow"></span></th>
+        <th data-key="permission">Permission<span class="arrow"></span></th>
+        <th data-key="severity">Severity<span class="arrow"></span></th>
+        <th data-key="owner">Owner<span class="arrow"></span></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div class="count" id="row-count"></div>
+
+  <script>
+    (function () {
+      var data = [
+        { role: 'billing-admin', resource: 'invoices', permission: 'delete', severity: 'high', owner: 'finance-team' },
+        { role: 'billing-admin', resource: 'invoices', permission: 'write', severity: 'medium', owner: 'finance-team' },
+        { role: 'support-agent', resource: 'tickets', permission: 'write', severity: 'low', owner: 'support-team' },
+        { role: 'support-agent', resource: 'customer-pii', permission: 'read', severity: 'high', owner: 'support-team' },
+        { role: 'deploy-bot', resource: 'prod-cluster', permission: 'write', severity: 'high', owner: 'platform-team' },
+        { role: 'deploy-bot', resource: 'secrets-vault', permission: 'read', severity: 'high', owner: 'platform-team' },
+        { role: 'analytics-reader', resource: 'warehouse', permission: 'read', severity: 'low', owner: 'data-team' },
+        { role: 'analytics-reader', resource: 'raw-events', permission: 'read', severity: 'medium', owner: 'data-team' },
+        { role: 'on-call-eng', resource: 'prod-cluster', permission: 'read', severity: 'medium', owner: 'platform-team' },
+        { role: 'on-call-eng', resource: 'audit-logs', permission: 'read', severity: 'low', owner: 'platform-team' },
+        { role: 'contractor-temp', resource: 'staging-cluster', permission: 'write', severity: 'medium', owner: 'external' },
+        { role: 'contractor-temp', resource: 'customer-pii', permission: 'read', severity: 'high', owner: 'external' },
+        { role: 'auditor', resource: 'audit-logs', permission: 'read', severity: 'low', owner: 'compliance-team' },
+        { role: 'auditor', resource: 'iam-roles', permission: 'read', severity: 'low', owner: 'compliance-team' },
+      ];
+
+      var tbody = document.querySelector('#audit-table tbody');
+      var filterInput = document.getElementById('filter');
+      var rowCount = document.getElementById('row-count');
+      var headers = Array.prototype.slice.call(document.querySelectorAll('th[data-key]'));
+
+      var sortKey = null;
+      var sortDir = 1;
+
+      var severityRank = { low: 0, medium: 1, high: 2 };
+
+      function matches(row, query) {
+        if (!query) return true;
+        var haystack = (row.role + ' ' + row.resource + ' ' + row.permission + ' ' + row.owner).toLowerCase();
+        return haystack.indexOf(query.toLowerCase()) !== -1;
+      }
+
+      function renderRows() {
+        var query = filterInput.value.trim();
+        var rows = data.filter(function (row) { return matches(row, query); });
+
+        if (sortKey) {
+          rows.sort(function (a, b) {
+            var av = sortKey === 'severity' ? severityRank[a.severity] : a[sortKey];
+            var bv = sortKey === 'severity' ? severityRank[b.severity] : b[sortKey];
+            if (av < bv) return -1 * sortDir;
+            if (av > bv) return 1 * sortDir;
+            return 0;
+          });
+        }
+
+        tbody.innerHTML = '';
+        rows.forEach(function (row) {
+          var tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + row.role + '</td>' +
+            '<td>' + row.resource + '</td>' +
+            '<td>' + row.permission + '</td>' +
+            '<td><span class="badge ' + row.severity + '">' + row.severity + '</span></td>' +
+            '<td>' + row.owner + '</td>';
+          tbody.appendChild(tr);
+        });
+
+        rowCount.textContent = rows.length + ' of ' + data.length + ' entries shown';
+      }
+
+      headers.forEach(function (th) {
+        th.addEventListener('click', function () {
+          var key = th.getAttribute('data-key');
+          if (sortKey === key) {
+            sortDir *= -1;
+          } else {
+            sortKey = key;
+            sortDir = 1;
+          }
+          headers.forEach(function (h) { h.querySelector('.arrow').textContent = ''; });
+          th.querySelector('.arrow').textContent = sortDir === 1 ? '▲' : '▼';
+          renderRows();
+        });
+      });
+
+      filterInput.addEventListener('input', renderRows);
+
+      renderRows();
+    })();
+  </script>
+</body>
+</html>

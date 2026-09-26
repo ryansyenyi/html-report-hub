@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sprint 14 Progress</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --text: #1a1d23;
+    --muted: #5b6270;
+    --border: #e2e5ea;
+    --accent: #2f6feb;
+    --track: #e2e5ea;
+    --ideal: #9aa1b0;
+    --actual: #2f6feb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --panel: #1c1f26;
+      --text: #e8eaf0;
+      --muted: #9aa1b0;
+      --border: #2b2f38;
+      --accent: #6ea1ff;
+      --track: #2b2f38;
+      --ideal: #5b6270;
+      --actual: #6ea1ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  h2 { font-size: 1rem; margin: 0 0 12px; color: var(--muted); font-weight: 600; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 0.9rem; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .task-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .task-name { flex: 0 0 180px; font-size: 0.9rem; }
+  .bar-track {
+    flex: 1;
+    height: 12px;
+    background: var(--track);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 6px;
+  }
+  .task-pct { flex: 0 0 42px; text-align: right; font-size: 0.85rem; color: var(--muted); }
+  .legend { display: flex; gap: 18px; margin-bottom: 10px; font-size: 0.8rem; color: var(--muted); }
+  .legend-swatch { display: inline-block; width: 12px; height: 3px; margin-right: 6px; vertical-align: middle; }
+  svg { width: 100%; height: 220px; display: block; }
+  .grid-line { stroke: var(--border); stroke-width: 1; }
+  .axis-label { fill: var(--muted); font-size: 10px; }
+</style>
+</head>
+<body>
+  <h1>Sprint 14 Progress</h1>
+  <p class="sub">Narya &middot; sprint burndown &amp; task completion (fictional data)</p>
+
+  <div class="panel">
+    <h2>Task completion</h2>
+    <div id="tasks"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Burndown</h2>
+    <div class="legend">
+      <span><span class="legend-swatch" style="background: var(--ideal);"></span>Ideal</span>
+      <span><span class="legend-swatch" style="background: var(--actual);"></span>Actual</span>
+    </div>
+    <svg id="burndown" viewBox="0 0 640 220" preserveAspectRatio="none"></svg>
+  </div>
+
+  <script>
+    (function () {
+      var tasks = [
+        { name: 'Catalog schema', pct: 100 },
+        { name: 'Validator script', pct: 100 },
+        { name: 'Viewer iframe', pct: 70 },
+        { name: 'Catalog list UI', pct: 55 },
+        { name: 'Filter sidebar', pct: 40 },
+        { name: 'CI deploy workflow', pct: 15 },
+      ];
+
+      var tasksEl = document.getElementById('tasks');
+      tasks.forEach(function (t) {
+        var row = document.createElement('div');
+        row.className = 'task-row';
+        row.innerHTML =
+          '<div class="task-name">' + t.name + '</div>' +
+          '<div class="bar-track"><div class="bar-fill" style="width: ' + t.pct + '%;"></div></div>' +
+          '<div class="task-pct">' + t.pct + '%</div>';
+        tasksEl.appendChild(row);
+      });
+
+      var SVG_NS = 'http://www.w3.org/2000/svg';
+      function el(tag, attrs) {
+        var node = document.createElementNS(SVG_NS, tag);
+        for (var k in attrs) node.setAttribute(k, attrs[k]);
+        return node;
+      }
+
+      var totalPoints = 42;
+      var days = 10;
+      var ideal = [];
+      for (var i = 0; i <= days; i++) {
+        ideal.push(totalPoints - (totalPoints / days) * i);
+      }
+      var actual = [42, 40, 37, 34, 33, 29, 24, 20, 14, 9, 5];
+
+      var svg = document.getElementById('burndown');
+      var w = 640, h = 220, padding = 28;
+      var maxY = totalPoints;
+      var slot = (w - padding * 2) / days;
+
+      function toPoints(series) {
+        return series.map(function (v, i) {
+          var x = padding + i * slot;
+          var y = h - padding - (v / maxY) * (h - padding * 2);
+          return x.toFixed(1) + ',' + y.toFixed(1);
+        }).join(' ');
+      }
+
+      for (var g = 0; g < 5; g++) {
+        var gy = padding + g * ((h - padding * 2) / 4);
+        svg.appendChild(el('line', { x1: padding, x2: w - padding, y1: gy, y2: gy, class: 'grid-line' }));
+      }
+
+      svg.appendChild(el('polyline', {
+        points: toPoints(ideal), fill: 'none', stroke: 'var(--ideal)', 'stroke-width': 2, 'stroke-dasharray': '5,5',
+      }));
+      svg.appendChild(el('polyline', {
+        points: toPoints(actual), fill: 'none', stroke: 'var(--actual)', 'stroke-width': 2.5,
+      }));
+
+      actual.forEach(function (v, i) {
+        var x = padding + i * slot;
+        var y = h - padding - (v / maxY) * (h - padding * 2);
+        svg.appendChild(el('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: 3, fill: 'var(--actual)' }));
+      });
+
+      svg.appendChild(el('text', { x: padding, y: h - 6, class: 'axis-label' })).textContent = 'Day 0';
+      svg.appendChild(el('text', { x: w - padding, y: h - 6, class: 'axis-label', 'text-anchor': 'end' })).textContent = 'Day ' + days;
+    })();
+  </script>
+</body>
+</html>
