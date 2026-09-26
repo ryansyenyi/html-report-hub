@@ -1,1 +1,1 @@
-# html-report-hub
+# Report Hub
