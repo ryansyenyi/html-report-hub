@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Identity Module 3 Progress</title>
+<style>
+  :root {
+    --ink: #1a2332;
+    --muted: #5a6578;
+    --line: #d8dee8;
+    --paper: #f7f5f0;
+    --card: #ffffff;
+    --accent: #0d7377;
+    --accent-soft: #e6f4f4;
+    --warn: #b45309;
+    --warn-soft: #fff7ed;
+    --bad: #b91c1c;
+    --bad-soft: #fef2f2;
+    --good: #047857;
+    --good-soft: #ecfdf5;
+    --open: #1d4ed8;
+    --open-soft: #eff6ff;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Fraunces", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #dfeceb 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, #efe8dc 0%, transparent 50%),
+      var(--paper);
+    line-height: 1.55;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 20px 80px; }
+  header.hero {
+    display: grid;
+    gap: 18px;
+    padding: 28px 0 10px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .kicker {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    line-height: 1.15;
+    margin: 0;
+    max-width: 18ch;
+  }
+  .lede { font-size: 1.05rem; color: var(--muted); max-width: 62ch; margin: 0; }
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 10px;
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .pill strong { color: var(--ink); font-weight: 600; }
+  .pill.good { background: var(--good-soft); border-color: #a7f3d0; color: var(--good); }
+  .pill.warn { background: var(--warn-soft); border-color: #fed7aa; color: var(--warn); }
+  .pill.bad { background: var(--bad-soft); border-color: #fecaca; color: var(--bad); }
+
+  nav.toc {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, white);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    margin: 0 -20px 28px;
+    padding: 10px 20px;
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  nav.toc button {
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 7px 11px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  nav.toc button:hover, nav.toc button.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  section { margin: 0 0 42px; scroll-margin-top: 64px; }
+  h2 {
+    font-family: var(--display);
+    font-size: 1.55rem;
+    margin: 0 0 8px;
+  }
+  h3 { font-size: 1.05rem; margin: 22px 0 8px; }
+  .section-lead { color: var(--muted); margin: 0 0 18px; max-width: 70ch; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 860px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 0 rgba(26,35,50,0.03);
+  }
+  .card h3 { margin-top: 0; }
+  .stat {
+    font-family: var(--display);
+    font-size: 2rem;
+    line-height: 1;
+    margin: 4px 0 6px;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    background: #eef1f6;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  tr:last-child td { border-bottom: 0; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover td { background: #fafaf8; }
+  tr.selected td { background: var(--accent-soft); }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .badge.done { background: var(--good-soft); color: var(--good); }
+  .badge.open { background: var(--open-soft); color: var(--open); }
+  .badge.stale { background: var(--warn-soft); color: var(--warn); }
+  .badge.drift { background: var(--bad-soft); color: var(--bad); }
+  .badge.ok { background: var(--accent-soft); color: var(--accent); }
+
+  .prompt-card { margin-top: 16px; }
+  .prompt-card .prompt-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .prompt-card .prompt-head h3 { margin: 0; }
+  .prompt-card .prompt-head p {
+    margin: 4px 0 0; font-size: 13px; color: var(--muted); max-width: 62ch;
+  }
+  .prompt-card button.copy {
+    border: 1px solid var(--line);
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .prompt-card button.copy:hover { border-color: var(--accent); }
+  .prompt-card button.copy.copied {
+    background: var(--good-soft);
+    color: var(--good);
+    border-color: #a7f3d0;
+  }
+  .prompt-card pre {
+    margin: 0;
+    padding: 14px 16px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    overflow-x: auto;
+  }
+  .diagram svg { display: block; width: 100%; height: auto; max-width: 1000px; margin: 0 auto; }
+  .diagram-caption {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 10px 4px 0;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 860px) { .compare { grid-template-columns: 1fr; } }
+  .compare .panel {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--card);
+    overflow: hidden;
+  }
+  .compare .panel .bar {
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .compare .before .bar { background: #f3e8e8; color: #7f1d1d; }
+  .compare .after .bar { background: var(--accent-soft); color: var(--accent); }
+  .compare .panel .body { padding: 14px; }
+  .compare pre, .example pre {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .filters button {
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .filters button.active {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+
+  details.req {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  details.req summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 11px 14px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+  details.req summary::-webkit-details-marker { display: none; }
+  details.req[open] summary { border-bottom: 1px solid var(--line); }
+  details.req .body { padding: 12px 14px 14px; color: var(--muted); font-size: 14px; }
+  code, .mono { font-family: var(--mono); font-size: 0.92em; }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 12px 14px;
+    border-radius: 0 10px 10px 0;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  .callout.warn { border-color: var(--warn); background: var(--warn-soft); }
+  .callout.bad { border-color: var(--bad); background: var(--bad-soft); }
+
+  .timeline {
+    display: grid;
+    gap: 0;
+    border-left: 2px solid var(--line);
+    margin-left: 10px;
+    padding-left: 18px;
+  }
+  .tl-item { position: relative; padding: 0 0 18px; }
+  .tl-item::before {
+    content: "";
+    position: absolute;
+    left: -25px; top: 6px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--paper);
+  }
+  .tl-item .when { font-size: 12px; color: var(--muted); }
+  .tl-item .what { font-weight: 600; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .hidden { display: none !important; }
+
+  .prompt-card { margin-top: 16px; }
+  .prompt-card .prompt-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .prompt-card .prompt-head h3 { margin: 0; }
+  .prompt-card .prompt-head p {
+    margin: 4px 0 0; font-size: 13px; color: var(--muted); max-width: 62ch;
+  }
+  .prompt-card button.copy {
+    border: 1px solid var(--line);
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .prompt-card button.copy:hover { border-color: var(--accent); }
+  .prompt-card button.copy.copied {
+    background: var(--good-soft);
+    color: var(--good);
+    border-color: #a7f3d0;
+  }
+  .prompt-card pre {
+    margin: 0;
+    padding: 14px 16px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .badge.partial { background: var(--warn-soft); color: var(--warn); }
+
+  .legend { display:flex; flex-wrap:wrap; gap:14px; font-size:12.5px; color:var(--muted); margin:0 0 12px; }
+  .legend i.sw { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; border:1px solid transparent; }
+  .sw.done, .chip.done { background:var(--good-soft); border-color:#6ee7b7 !important; color:var(--good); }
+  .sw.lag, .chip.lag { background:#ecfdf5; border-color:#6ee7b7 !important; color:var(--good); background-image:repeating-linear-gradient(135deg,transparent 0 5px,rgba(180,83,9,.16) 5px 7px); }
+  .sw.prog, .chip.prog { background:var(--warn-soft); border-color:#fdba74 !important; color:var(--warn); }
+  .sw.ready, .chip.ready { background:var(--open-soft); border-color:#93c5fd !important; color:var(--open); }
+  .sw.gated, .chip.gated { background:#f1f5f9; border-color:#cbd5e1 !important; color:#64748b; }
+  .sw.human { background:#fff; border:2px dashed #7c3aed !important; }
+  .chip.human { outline:2px dashed #7c3aed; outline-offset:1px; }
+  .route { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .route .phase { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 4px 0 10px; }
+  .route .phase:first-child { margin-left:0; }
+  .chip { border:1px solid; border-radius:9px; padding:6px 9px; font:inherit; font-size:12.5px; font-weight:600; cursor:pointer; min-width:48px; text-align:center; line-height:1.2; }
+  .chip small { display:block; font-weight:400; font-size:10.5px; opacity:.85; font-family:var(--mono); }
+  .chip.sel { box-shadow:0 0 0 3px var(--ink); }
+  #route-detail h3 { margin:0 0 6px; }
+  #route-detail dl { display:grid; grid-template-columns:120px 1fr; gap:4px 12px; margin:10px 0 0; font-size:14px; }
+  #route-detail dt { color:var(--muted); }
+  #route-detail dd { margin:0; }
+  .req-count { font-size:13px; color:var(--muted); margin:0 0 8px; }
+  details.req summary .rid { font-family:var(--mono); font-size:12.5px; font-weight:600; }
+  details.req summary .rt { font-size:14px; }
+  details.req summary .rs { font-family:var(--mono); font-size:11px; color:var(--muted); margin-right:8px; }
+  ol.todo { margin:0; padding-left:20px; font-size:14.5px; }
+  ol.todo li { margin-bottom:7px; }
+  .diagram svg text { font-family: var(--sans); }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Narya · Identity consolidation · Module 3 of 3</div>
+    <h1>Extract identity into identity-svc: what has landed and what is still open</h1>
+    <p class="lede">
+      Progress report for <strong>Identity Module 3</strong>. It checks Plane epic <code>TMS-327</code> (33 slices plus 10 follow-ups)
+      against GitHub and infra merges, and against the requirements guide in Outline <em>03.02.07</em>
+      (<code>E3-01</code>…<code>E3-117</code>, 115 rows, spec rev 38), the Notion RFC, and ADR-0119…0124.
+      Pre-gate work is landing on <code>main</code>. The module is <strong>early and in progress</strong>, not closed:
+      the gated route from S3b through S9 has not started, because the Module 2a golden matrix (<code>TMS-237</code>) is still open.
+    </p>
+    <div class="meta-row">
+      <span class="pill good"><strong>Landed</strong> S0a · S0b · P1 · P2 · S1a</span>
+      <span class="pill warn"><strong>S1b</strong> infra in progress</span>
+      <span class="pill warn"><strong>P3 · S2a</strong> local, no PR yet</span>
+      <span class="pill bad"><strong>Gate</strong> TMS-237 open</span>
+      <span class="pill"><strong>ADR-0119…0124</strong> Proposed</span>
+      <span class="pill"><strong>As of</strong> 2026-09-26 · 22:30 (+08)</span>
+      <span class="pill"><strong>Main tip</strong> d57aa286</span>
+    </div>
+  </header>
+
+  <nav class="toc" id="toc">
+    <button data-target="verdict" class="active">Verdict</button>
+    <button data-target="completion">Completion</button>
+    <button data-target="route">Slice route</button>
+    <button data-target="architecture">Architecture</button>
+    <button data-target="examples">Examples</button>
+    <button data-target="drift">Drift analysis</button>
+    <button data-target="requirements">E3 requirements</button>
+    <button data-target="followups">Follow-ups</button>
+  </nav>
+
+  <section id="verdict">
+    <h2>Verdict</h2>
+    <p class="section-lead">
+      Module 3 moves persons, login identities, sessions and CSRF, password flows and signing keys out of Core and into a new
+      <code>identity-svc</code>. Traefik ForwardAuth moves with them and mints a ≤30 s EdDSA assertion, and Core keeps every
+      authorization decision (ADR-0119/0120, E3-02). What is on <code>main</code> today is the <em>scaffolding</em>: ADRs,
+      the vendored guide, two behaviour-neutral Core preparations, an identity-svc with empty route tables, and a staging
+      database. No request is served by identity-svc yet, and no user-visible behaviour has changed.
+    </p>
+    <div class="grid-3">
+      <div class="card">
+        <div class="stat-label">Slices landed (33)</div>
+        <div class="stat" style="color:var(--warn)">5 / 33</div>
+        <div>S0a, S0b, P1, P2, S1a. S1b is in progress; P3 and S2a are in flight on local branches.</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">E3 requirements (115)</div>
+        <div class="stat" style="color:var(--bad)">5 / 115</div>
+        <div>5 done · 18 partial · 92 open. The rules are mostly <em>gated</em> behind S3b and later slices.</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Module close</div>
+        <div class="stat" style="color:var(--warn)">Early</div>
+        <div>Done means S9 deployed, S8 signed off, a DR-S10 pass and ADRs A–F Accepted (M3-QC5.4, H13).</div>
+      </div>
+    </div>
+    <div class="callout warn" style="margin-top:18px">
+      <strong>Source note.</strong> All four sources were read live on 2026-09-26:
+      <strong>Plane</strong> (the MCP disconnected mid-sweep; every gap was re-fetched, so each ticket's newest comment was read),
+      <strong>GitHub</strong> (backend-narya, infra-gitops, infra-ansible and web-narya),
+      <strong>Outline 03.02.07</strong> (revision 4, 14:09Z, about 48 KB, not truncated) and <strong>Notion</strong> (last edited 2026-09-22).
+      The repo twin <code>docs/requirements/identity-module-3.md</code> (vendored revision 2) matches Outline apart from link style.
+      The normative spec is <code>m3-grill-v3/requirements.md</code> rev 38 with DR runbook spec rev 14, both frozen 2026-09-25.
+      Requirement status on this page is <em>inferred from evidence</em>: none of the sources carries per-row status.
+    </div>
+    <div class="callout bad">
+      <strong>Main health.</strong> The <code>ci</code> run on <code>d57aa286</code> was still <em>pending</em> at report time.
+      Open PR <a href="https://github.com/PMA-Tech/backend-narya/pull/498">#498</a> states that main has been red since #481 and #420
+      (<code>TestRouteMatrix_REG23_SessionPlaneGolden</code> hitting the sign-in budget). This report has not verified that claim.
+    </div>
+  </section>
+
+  <section id="completion">
+    <h2>What completed: Plane vs GitHub and infra</h2>
+    <p class="section-lead">
+      Each ticket's newest Plane comment is the record of its state, and merges are the record of the code. Where they disagree, the row
+      says so. Three tickets have merged code but still sit in <strong>Backlog</strong> on Plane.
+    </p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Ticket vs code</h3>
+        <table>
+          <thead><tr><th>Slice / ticket</th><th>Plane</th><th>GitHub / infra</th><th>Read</th></tr></thead>
+          <tbody>
+            <tr><td><code>TMS-327</code> epic</td><td>Backlog · 0 comments</td><td>5 M3 PRs merged</td><td><span class="badge drift">Tracker lag</span></td></tr>
+            <tr><td>S0a <code>TMS-330</code></td><td>Done</td><td><a href="https://github.com/PMA-Tech/backend-narya/pull/478">#478</a>, <a href="https://github.com/PMA-Tech/backend-narya/pull/479">#479</a> merged</td><td><span class="badge done">Done</span></td></tr>
+            <tr><td>S0b <code>TMS-331</code></td><td>Done (human)</td><td>11 comments on other owners' tickets (H12)</td><td><span class="badge done">Done</span></td></tr>
+            <tr><td>P1 <code>TMS-332</code></td><td>Backlog</td><td><a href="https://github.com/PMA-Tech/backend-narya/pull/480">#480</a> merged (E3-96)</td><td><span class="badge stale">Merged · Plane lag</span></td></tr>
+            <tr><td>P2 <code>TMS-333</code></td><td>Backlog</td><td><a href="https://github.com/PMA-Tech/backend-narya/pull/483">#483</a> merged (E3-97)</td><td><span class="badge stale">Merged · Plane lag</span></td></tr>
+            <tr><td>S1a <code>TMS-335</code></td><td>Backlog</td><td><a href="https://github.com/PMA-Tech/backend-narya/pull/490">#490</a> merged (scaffold)</td><td><span class="badge stale">Merged · Plane lag</span></td></tr>
+            <tr><td>S1b <code>TMS-337</code></td><td>In Progress (human)</td><td>infra-ansible #149, infra-gitops #160 merged · <a href="https://github.com/PMA-Tech/backend-narya/pull/497">#497</a> and infra-gitops #161 open</td><td><span class="badge partial">Partial</span></td></tr>
+            <tr><td>P3 <code>TMS-334</code></td><td>Backlog</td><td>Local branch, 7 commits, no PR or remote branch</td><td><span class="badge open">In flight</span></td></tr>
+            <tr><td>S2a <code>TMS-336</code></td><td>Backlog</td><td>Local branch, 2 commits, no PR. Merging needs Ryan's staging duplicate count</td><td><span class="badge open">In flight</span></td></tr>
+            <tr><td>S2b…S10c <code>TMS-338…362</code></td><td>Backlog (26)</td><td>No PRs</td><td><span class="badge open">Open</span></td></tr>
+            <tr><td>Follow-ups <code>TMS-363…372</code></td><td>Backlog · needs-triage (10)</td><td>No PRs</td><td><span class="badge open">Untriaged</span></td></tr>
+            <tr><td>Gate <code>TMS-237</code> (2a)</td><td>Backlog</td><td>#481 merged · #484, #486 and #498 open</td><td><span class="badge drift">Blocks S3b+</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Merged timeline (+08)</h3>
+        <div class="timeline">
+          <div class="tl-item"><div class="when">2026-09-22</div><div class="what">Notion RFC last edited: status "Not started", E3-01…34</div></div>
+          <div class="tl-item"><div class="when">2026-09-25</div><div class="what">Spec rev 38 and DR runbook spec rev 14 frozen (115 E3 rows, H1–H43)</div></div>
+          <div class="tl-item"><div class="when">2026-09-26 10:18</div><div class="what"><a href="https://github.com/PMA-Tech/backend-narya/pull/478">#478</a> S0a: ADR-0119…0124 Proposed, E3 traceability (TMS-330)</div></div>
+          <div class="tl-item"><div class="when">2026-09-26 10:38</div><div class="what"><a href="https://github.com/PMA-Tech/backend-narya/pull/480">#480</a> P1: split <code>AuthBaseRoute</code> (TMS-332, E3-96)</div></div>
+          <div class="tl-item"><div class="when">2026-09-26 11:12</div><div class="what"><a href="https://github.com/PMA-Tech/backend-narya/pull/479">#479</a> guide vendored · infra-ansible #149 <code>identity_svc</code> DB, import role, write guard</div></div>
+          <div class="tl-item"><div class="when">2026-09-26 11:23</div><div class="what">infra-gitops #160: identity-svc staging secrets, publisher topology, pool pins (TMS-337)</div></div>
+          <div class="tl-item"><div class="when">2026-09-26 21:34</div><div class="what">#481 golden matrix for session planes (TMS-237, first part of the gate)</div></div>
+          <div class="tl-item"><div class="when">2026-09-26 21:35</div><div class="what"><a href="https://github.com/PMA-Tech/backend-narya/pull/483">#483</a> P2: httpx 503 opt-in (TMS-333, E3-97) · <a href="https://github.com/PMA-Tech/backend-narya/pull/490">#490</a> S1a identity-svc scaffold (TMS-335), now the main tip <code>d57aa286</code></div></div>
+          <div class="tl-item"><div class="when">2026-09-26 22:09</div><div class="what">Outline 03.02.07 revision 4 (render fixes only)</div></div>
+        </div>
+        <h3 style="margin-top:18px">What S1a put on main</h3>
+        <table>
+          <thead><tr><th>Piece</th><th>State on <code>d57aa286</code></th></tr></thead>
+          <tbody>
+            <tr><td><code>services/identity-svc</code></td><td>22 files; modes <code>api</code>, <code>migrate</code>, <code>outboxrelay</code>; no eventhandler (by design)</td></tr>
+            <tr><td>Routes</td><td><code>Routes()</code> and <code>ForwardAuthRoutes()</code> both empty; <code>openapi.yaml</code> has no paths</td></tr>
+            <tr><td>Schema</td><td>One migration: <code>0001_create_event_outbox.sql</code>. The five-table schema arrives with S2b</td></tr>
+            <tr><td>Contracts</td><td>AsyncAPI spec and generated file, <code>upstreams.yaml</code>, compose/CI/deploy wiring, lint-negative fixtures</td></tr>
+            <tr><td>Staging</td><td><code>identity_svc</code> DB live (infra-ansible #149). The Argo apps are not deployed yet (#497, infra-gitops #161)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="route">
+    <h2>Slice route: S0 to S11</h2>
+    <p class="section-lead">
+      The epic's order is <strong>pre-gate</strong> P1 → P2 → P3 → S1 → S2 → S3a (these may start now, per H5), then
+      <strong>gated</strong> S3b → S4 → S5 → S6 (a single flip PR merged at F2) → S7 → S8 (cut-over F1–F6, soak of at least 14 days) → S9 (irreversible).
+      Click a slice to see its tickets, requirements and evidence.
+    </p>
+    <div class="legend">
+      <span><i class="sw done"></i>Landed</span>
+      <span><i class="sw lag"></i>Merged, Plane lag</span>
+      <span><i class="sw prog"></i>In progress / in flight</span>
+      <span><i class="sw ready"></i>Startable now</span>
+      <span><i class="sw gated"></i>Gated on TMS-237</span>
+      <span><i class="sw human"></i>Human-owned</span>
+    </div>
+    <div class="route" id="route-strip"></div>
+    <div class="card" id="route-detail" style="margin-top:14px"></div>
+  </section>
+
+  <section id="architecture">
+    <h2>Architecture: before, now, after</h2>
+    <p class="section-lead">
+      The three views share one layout, so switching between them shows what moves. The browser contract, the Cloudflare Worker, the device plane, tenant API keys and
+      every authorization decision in Core stay unchanged (E3-34, §8.10). What changes is <em>who holds the credential</em> and
+      <em>how Core learns who is calling</em>: a signed assertion replaces a second session lookup.
+    </p>
+    <div class="filters" id="arch-filters">
+      <button class="active" data-arch="before">Before M3 (Core owns identity)</button>
+      <button data-arch="now">Now: main d57aa286</button>
+      <button data-arch="after">After S9 (target)</button>
+    </div>
+    <div class="diagram" data-arch-panel="before"><svg viewBox="0 0 1100 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Before Module 3: Core owns identity"><defs><marker id="ah-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker><marker id="ah-b-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#0d7377"/></marker><marker id="ah-b-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#b91c1c"/></marker></defs>
+<rect x="20" y="30" width="160" height="56" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+<text x="32" y="52" font-size="13" font-weight="700" fill="#3730a3">Browser · SPA</text>
+<text x="32" y="72" font-size="11.5" fill="#334155" xml:space="preserve">__Host-narya_session/_csrf</text>
+<rect x="20" y="130" width="160" height="70" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+<text x="32" y="152" font-size="13" font-weight="700" fill="#3730a3">Cloudflare</text>
+<text x="32" y="172" font-size="11.5" fill="#334155" xml:space="preserve">Worker + tunnel</text>
+<text x="32" y="188" font-size="11.5" fill="#334155" xml:space="preserve">TLS ends here</text>
+<rect x="20" y="430" width="160" height="70" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="32" y="452" font-size="13" font-weight="700" fill="#1e293b">dms-gateway</text>
+<text x="32" y="472" font-size="11.5" fill="#334155" xml:space="preserve">device credentials</text>
+<text x="32" y="488" font-size="11.5" fill="#334155" xml:space="preserve">ADR-0028 · unchanged</text>
+<line x1="100" y1="86" x2="100" y2="128" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-b)"/>
+<line x1="180" y1="165" x2="218" y2="165" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-b)"/>
+<line x1="325" y1="250" x2="325" y2="338" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-b)"/>
+<text x="332" y="300" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">route</text>
+<line x1="220" y1="440" x2="182" y2="460" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-b)"/>
+<rect x="220" y="100" width="210" height="150" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+<text x="232" y="122" font-size="13" font-weight="700" fill="#3730a3">Traefik (ingress)</text>
+<text x="232" y="142" font-size="11.5" fill="#334155" xml:space="preserve">strip Person-ID / Account-ID</text>
+<text x="232" y="158" font-size="11.5" fill="#334155" xml:space="preserve">ForwardAuth middleware →</text>
+<text x="232" y="174" font-size="11.5" fill="#334155" xml:space="preserve">  core-api …/auth/forward-auth</text>
+<text x="232" y="190" font-size="11.5" fill="#334155" xml:space="preserve">auth subtree skips ForwardAuth</text>
+<rect x="220" y="340" width="210" height="110" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="232" y="362" font-size="13" font-weight="700" fill="#1e293b">narya-portal-bff</text>
+<text x="232" y="382" font-size="11.5" fill="#334155" xml:space="preserve">owns cookies · no DB</text>
+<text x="232" y="398" font-size="11.5" fill="#334155" xml:space="preserve">24 session-carrying call sites</text>
+<text x="232" y="414" font-size="11.5" fill="#334155" xml:space="preserve">sends X-Narya-Session + CSRF</text>
+<rect x="560" y="20" width="300" height="330" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="572" y="42" font-size="13" font-weight="700" fill="#1e293b">core-api — identity AND authz</text>
+<text x="572" y="62" font-size="11.5" fill="#b91c1c" xml:space="preserve">GET /api/v1/auth/forward-auth (lookup #1)</text>
+<text x="572" y="78" font-size="11.5" fill="#b91c1c" xml:space="preserve">POST /api/v1/auth/session · argon2id</text>
+<text x="572" y="94" font-size="11.5" fill="#b91c1c" xml:space="preserve">RequireSession on BFF calls (lookup #2)</text>
+<text x="572" y="110" font-size="11.5" fill="#b91c1c" xml:space="preserve">CSRF authoritative (REG-27)</text>
+<text x="572" y="126" font-size="11.5" fill="#b91c1c" xml:space="preserve">admin reset · relink · suspend · revoke</text>
+<text x="572" y="142" font-size="11.5" fill="#b91c1c" xml:space="preserve">platformbootstrap (init container)</text>
+<text x="572" y="158" font-size="11.5" fill="#334155" font-style="italic" xml:space="preserve">— stays in Core after M3 —</text>
+<text x="572" y="174" font-size="11.5" fill="#334155" xml:space="preserve">rbac.Decide · boundary · 404 out-of-reach</text>
+<text x="572" y="190" font-size="11.5" fill="#334155" xml:space="preserve">accounts · roles · tenants · org tree</text>
+<text x="572" y="206" font-size="11.5" fill="#334155" xml:space="preserve">getMe · listMyAccounts · tenant existence</text>
+<rect x="890" y="20" width="190" height="330" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.6"/>
+<text x="902" y="42" font-size="13" font-weight="700" fill="#92400e">DB core</text>
+<text x="902" y="62" font-size="11.5" fill="#b91c1c" xml:space="preserve">persons</text>
+<text x="902" y="78" font-size="11.5" fill="#b91c1c" xml:space="preserve">login_identities</text>
+<text x="902" y="94" font-size="11.5" fill="#b91c1c" xml:space="preserve">  argon2id credential_hash</text>
+<text x="902" y="110" font-size="11.5" fill="#b91c1c" xml:space="preserve">sessions</text>
+<text x="902" y="126" font-size="11.5" fill="#b91c1c" xml:space="preserve">  token_hash · csrf_token</text>
+<text x="902" y="142" font-size="11.5" fill="#b91c1c" xml:space="preserve">  account_id FK → accounts</text>
+<text x="902" y="158" font-size="11.5" fill="#334155" font-style="italic" xml:space="preserve">— stays —</text>
+<text x="902" y="174" font-size="11.5" fill="#334155" xml:space="preserve">accounts · roles · tenants</text>
+<text x="902" y="190" font-size="11.5" fill="#334155" xml:space="preserve">audit_log (same-tx sign_in)</text>
+<line x1="430" y1="150" x2="558" y2="112" stroke="#b91c1c" stroke-width="1.8" marker-end="url(#ah-b-r)"/>
+<text x="440" y="118" font-size="10.5" fill="#b91c1c" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">ForwardAuth (cookie)</text>
+<line x1="430" y1="390" x2="558" y2="300" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-b)"/>
+<text x="470" y="372" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">delegate key +</text>
+<text x="470" y="385" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">Session + CSRF</text>
+<line x1="860" y1="185" x2="888" y2="185" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-b)"/>
+<text x="20" y="540" font-size="12" fill="#5a6578">Red = moves to identity-svc in Module 3.</text>
+<text x="20" y="558" font-size="12" fill="#5a6578">Two session lookups per protected request; no signing keys, no JWKS.</text>
+</svg></div>
+    <div class="diagram hidden" data-arch-panel="now"><svg viewBox="0 0 1100 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Now on main: identity-svc scaffold exists dark"><defs><marker id="ah-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker><marker id="ah-n-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#0d7377"/></marker><marker id="ah-n-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#b91c1c"/></marker></defs>
+<rect x="20" y="30" width="160" height="56" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+<text x="32" y="52" font-size="13" font-weight="700" fill="#3730a3">Browser · SPA</text>
+<text x="32" y="72" font-size="11.5" fill="#334155" xml:space="preserve">__Host-narya_session/_csrf</text>
+<rect x="20" y="130" width="160" height="70" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+<text x="32" y="152" font-size="13" font-weight="700" fill="#3730a3">Cloudflare</text>
+<text x="32" y="172" font-size="11.5" fill="#334155" xml:space="preserve">Worker + tunnel</text>
+<text x="32" y="188" font-size="11.5" fill="#334155" xml:space="preserve">TLS ends here</text>
+<rect x="20" y="430" width="160" height="70" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="32" y="452" font-size="13" font-weight="700" fill="#1e293b">dms-gateway</text>
+<text x="32" y="472" font-size="11.5" fill="#334155" xml:space="preserve">device credentials</text>
+<text x="32" y="488" font-size="11.5" fill="#334155" xml:space="preserve">ADR-0028 · unchanged</text>
+<line x1="100" y1="86" x2="100" y2="128" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-n)"/>
+<line x1="180" y1="165" x2="218" y2="165" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-n)"/>
+<line x1="325" y1="250" x2="325" y2="338" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-n)"/>
+<text x="332" y="300" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">route</text>
+<line x1="220" y1="440" x2="182" y2="460" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-n)"/>
+<rect x="220" y="100" width="210" height="150" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+<text x="232" y="122" font-size="13" font-weight="700" fill="#3730a3">Traefik (ingress)</text>
+<text x="232" y="142" font-size="11.5" fill="#334155" xml:space="preserve">strip Person-ID / Account-ID</text>
+<text x="232" y="158" font-size="11.5" fill="#334155" xml:space="preserve">ForwardAuth middleware →</text>
+<text x="232" y="174" font-size="11.5" fill="#334155" xml:space="preserve">  core-api …/auth/forward-auth</text>
+<text x="232" y="190" font-size="11.5" fill="#334155" xml:space="preserve">auth subtree skips ForwardAuth</text>
+<rect x="220" y="340" width="210" height="110" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="232" y="362" font-size="13" font-weight="700" fill="#1e293b">narya-portal-bff</text>
+<text x="232" y="382" font-size="11.5" fill="#334155" xml:space="preserve">owns cookies · no DB</text>
+<text x="232" y="398" font-size="11.5" fill="#334155" xml:space="preserve">24 session-carrying call sites</text>
+<text x="232" y="414" font-size="11.5" fill="#334155" xml:space="preserve">sends X-Narya-Session + CSRF</text>
+<rect x="560" y="20" width="300" height="330" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="572" y="42" font-size="13" font-weight="700" fill="#1e293b">core-api — identity AND authz</text>
+<text x="572" y="62" font-size="11.5" fill="#b91c1c" xml:space="preserve">GET /api/v1/auth/forward-auth (lookup #1)</text>
+<text x="572" y="78" font-size="11.5" fill="#b91c1c" xml:space="preserve">POST /api/v1/auth/session · argon2id</text>
+<text x="572" y="94" font-size="11.5" fill="#b91c1c" xml:space="preserve">RequireSession on BFF calls (lookup #2)</text>
+<text x="572" y="110" font-size="11.5" fill="#b91c1c" xml:space="preserve">CSRF authoritative (REG-27)</text>
+<text x="572" y="126" font-size="11.5" fill="#b91c1c" xml:space="preserve">admin reset · relink · suspend · revoke</text>
+<text x="572" y="142" font-size="11.5" fill="#b91c1c" xml:space="preserve">platformbootstrap (init container)</text>
+<text x="572" y="158" font-size="11.5" fill="#334155" font-style="italic" xml:space="preserve">— stays in Core after M3 —</text>
+<text x="572" y="174" font-size="11.5" fill="#334155" xml:space="preserve">rbac.Decide · boundary · 404 out-of-reach</text>
+<text x="572" y="190" font-size="11.5" fill="#334155" xml:space="preserve">accounts · roles · tenants · org tree</text>
+<text x="572" y="206" font-size="11.5" fill="#334155" xml:space="preserve">getMe · listMyAccounts · tenant existence</text>
+<rect x="890" y="20" width="190" height="330" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.6"/>
+<text x="902" y="42" font-size="13" font-weight="700" fill="#92400e">DB core</text>
+<text x="902" y="62" font-size="11.5" fill="#b91c1c" xml:space="preserve">persons</text>
+<text x="902" y="78" font-size="11.5" fill="#b91c1c" xml:space="preserve">login_identities</text>
+<text x="902" y="94" font-size="11.5" fill="#b91c1c" xml:space="preserve">  argon2id credential_hash</text>
+<text x="902" y="110" font-size="11.5" fill="#b91c1c" xml:space="preserve">sessions</text>
+<text x="902" y="126" font-size="11.5" fill="#b91c1c" xml:space="preserve">  token_hash · csrf_token</text>
+<text x="902" y="142" font-size="11.5" fill="#b91c1c" xml:space="preserve">  account_id FK → accounts</text>
+<text x="902" y="158" font-size="11.5" fill="#334155" font-style="italic" xml:space="preserve">— stays —</text>
+<text x="902" y="174" font-size="11.5" fill="#334155" xml:space="preserve">accounts · roles · tenants</text>
+<text x="902" y="190" font-size="11.5" fill="#334155" xml:space="preserve">audit_log (same-tx sign_in)</text>
+<line x1="430" y1="150" x2="558" y2="112" stroke="#b91c1c" stroke-width="1.8" marker-end="url(#ah-n-r)"/>
+<text x="440" y="118" font-size="10.5" fill="#b91c1c" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">ForwardAuth (cookie)</text>
+<line x1="430" y1="390" x2="558" y2="300" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-n)"/>
+<text x="470" y="372" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">delegate key +</text>
+<text x="470" y="385" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">Session + CSRF</text>
+<line x1="860" y1="185" x2="888" y2="185" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-n)"/>
+<rect x="560" y="390" width="300" height="150" rx="10" fill="#ffffff" stroke="#0d7377" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="572" y="412" font-size="13" font-weight="700" fill="#0b5a5d">identity-svc — scaffold, dark (#490)</text>
+<text x="572" y="432" font-size="11.5" fill="#334155" xml:space="preserve">modes api · migrate · outboxrelay</text>
+<text x="572" y="448" font-size="11.5" fill="#334155" xml:space="preserve">Routes() and ForwardAuthRoutes() empty</text>
+<text x="572" y="464" font-size="11.5" fill="#334155" xml:space="preserve">1 migration: event_outbox</text>
+<text x="572" y="480" font-size="11.5" fill="#334155" xml:space="preserve">Argo apps pending (#497, gitops #161)</text>
+<rect x="890" y="390" width="190" height="150" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="902" y="412" font-size="13" font-weight="700" fill="#92400e">DB identity_svc</text>
+<text x="902" y="432" font-size="11.5" fill="#334155" xml:space="preserve">live on staging</text>
+<text x="902" y="448" font-size="11.5" fill="#334155" xml:space="preserve">infra-ansible #149</text>
+<text x="902" y="464" font-size="11.5" fill="#334155" xml:space="preserve">import role · write guard</text>
+<text x="902" y="480" font-size="11.5" fill="#334155" xml:space="preserve">5-table schema: S2b</text>
+<text x="564" y="372" font-size="11" fill="#047857" style="paint-order:stroke;stroke:#fff;stroke-width:3px">P1 #480 AuthBaseRoute split · P2 #483 503 opt-in (unused)</text>
+<text x="20" y="540" font-size="12" fill="#5a6578">Now: every request still flows as before; nothing calls identity-svc yet.</text>
+<text x="20" y="558" font-size="12" fill="#5a6578">Dashed = deployed dark or not yet serving.</text>
+</svg></div>
+    <div class="diagram hidden" data-arch-panel="after"><svg viewBox="0 0 1100 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="After Module 3: identity-svc owns credentials and ForwardAuth"><defs><marker id="ah-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748b"/></marker><marker id="ah-a-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#0d7377"/></marker><marker id="ah-a-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#b91c1c"/></marker></defs>
+<rect x="20" y="30" width="160" height="56" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+<text x="32" y="52" font-size="13" font-weight="700" fill="#3730a3">Browser · SPA</text>
+<text x="32" y="72" font-size="11.5" fill="#334155" xml:space="preserve">__Host-narya_session/_csrf</text>
+<rect x="20" y="130" width="160" height="70" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+<text x="32" y="152" font-size="13" font-weight="700" fill="#3730a3">Cloudflare</text>
+<text x="32" y="172" font-size="11.5" fill="#334155" xml:space="preserve">Worker + tunnel</text>
+<text x="32" y="188" font-size="11.5" fill="#334155" xml:space="preserve">TLS ends here</text>
+<rect x="20" y="430" width="160" height="70" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="32" y="452" font-size="13" font-weight="700" fill="#1e293b">dms-gateway</text>
+<text x="32" y="472" font-size="11.5" fill="#334155" xml:space="preserve">device credentials</text>
+<text x="32" y="488" font-size="11.5" fill="#334155" xml:space="preserve">ADR-0028 · unchanged</text>
+<line x1="100" y1="86" x2="100" y2="128" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<line x1="180" y1="165" x2="218" y2="165" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<line x1="325" y1="250" x2="325" y2="338" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<text x="332" y="300" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">route</text>
+<line x1="220" y1="440" x2="182" y2="460" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<rect x="220" y="100" width="210" height="150" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+<text x="232" y="122" font-size="13" font-weight="700" fill="#3730a3">Traefik (ingress)</text>
+<text x="232" y="142" font-size="11.5" fill="#334155" xml:space="preserve">strip Person-ID / Account-ID</text>
+<text x="232" y="158" font-size="11.5" fill="#334155" xml:space="preserve">  + X-Narya-Assertion</text>
+<text x="232" y="174" font-size="11.5" fill="#334155" xml:space="preserve">ForwardAuth → identity-svc :8081</text>
+<text x="232" y="190" font-size="11.5" fill="#334155" xml:space="preserve">authResponseHeaders:</text>
+<text x="232" y="206" font-size="11.5" fill="#334155" xml:space="preserve">  X-Narya-Assertion</text>
+<rect x="220" y="340" width="210" height="110" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="232" y="362" font-size="13" font-weight="700" fill="#1e293b">narya-portal-bff</text>
+<text x="232" y="382" font-size="11.5" fill="#334155" xml:space="preserve">owns cookies · no DB</text>
+<text x="232" y="398" font-size="11.5" fill="#334155" xml:space="preserve">relays assertion (19 builders)</text>
+<text x="232" y="414" font-size="11.5" fill="#334155" xml:space="preserve">5 carry() sites → identity-svc</text>
+<rect x="560" y="20" width="300" height="250" rx="10" fill="#e6f4f4" stroke="#0d7377" stroke-width="1.6"/>
+<text x="572" y="42" font-size="13" font-weight="700" fill="#0b5a5d">identity-svc (2 replicas)</text>
+<text x="572" y="62" font-size="11.5" fill="#334155" xml:space="preserve">:8081 GET /forward-auth</text>
+<text x="572" y="78" font-size="11.5" fill="#334155" xml:space="preserve">  1 lookup · CSRF on unsafe · mint ≤30 s</text>
+<text x="572" y="94" font-size="11.5" fill="#334155" xml:space="preserve">:8080 /internal/v1/sessions · password</text>
+<text x="572" y="110" font-size="11.5" fill="#334155" xml:space="preserve">  · account · assertions (exchange)</text>
+<text x="572" y="126" font-size="11.5" fill="#334155" xml:space="preserve">:8080 persons ensure · credential-reset</text>
+<text x="572" y="142" font-size="11.5" fill="#334155" xml:space="preserve">  relink · suspension · session-revocations</text>
+<text x="572" y="158" font-size="11.5" fill="#334155" xml:space="preserve">:8080 GET /internal/v1/jwks</text>
+<text x="572" y="174" font-size="11.5" fill="#334155" xml:space="preserve">api · migrate · outboxrelay · bootstrap</text>
+<rect x="890" y="20" width="190" height="190" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.6"/>
+<text x="902" y="42" font-size="13" font-weight="700" fill="#92400e">DB identity_svc</text>
+<text x="902" y="62" font-size="11.5" fill="#334155" xml:space="preserve">persons</text>
+<text x="902" y="78" font-size="11.5" fill="#334155" xml:space="preserve">login_identities</text>
+<text x="902" y="94" font-size="11.5" fill="#334155" xml:space="preserve">sessions (account_id, no FK)</text>
+<text x="902" y="110" font-size="11.5" fill="#334155" xml:space="preserve">signing_keys (public halves)</text>
+<text x="902" y="126" font-size="11.5" fill="#334155" xml:space="preserve">event_outbox</text>
+<rect x="890" y="240" width="190" height="80" rx="10" fill="#faf5ff" stroke="#9333ea" stroke-width="1.6"/>
+<text x="902" y="262" font-size="13" font-weight="700" fill="#6b21a8">RabbitMQ</text>
+<text x="902" y="282" font-size="11.5" fill="#334155" xml:space="preserve">identity.events →</text>
+<text x="902" y="298" font-size="11.5" fill="#334155" xml:space="preserve">core.identity.audit.recorded</text>
+<rect x="560" y="340" width="300" height="200" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+<text x="572" y="362" font-size="13" font-weight="700" fill="#1e293b">core-api — authorization only</text>
+<text x="572" y="382" font-size="11.5" fill="#334155" xml:space="preserve">AssertionResolver: EdDSA vs cached JWKS</text>
+<text x="572" y="398" font-size="11.5" fill="#334155" xml:space="preserve">fresh account read → authz.Derive</text>
+<text x="572" y="414" font-size="11.5" fill="#334155" xml:space="preserve">rbac.Decide · boundary · 404 (unchanged)</text>
+<text x="572" y="430" font-size="11.5" fill="#334155" xml:space="preserve">POST …/persons/{id}/eligible-accounts</text>
+<text x="572" y="446" font-size="11.5" fill="#334155" xml:space="preserve">eventhandler → audit_log</text>
+<text x="572" y="462" font-size="11.5" fill="#334155" xml:space="preserve">identityreconcile (CronJobs)</text>
+<rect x="890" y="360" width="190" height="180" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.6"/>
+<text x="902" y="382" font-size="13" font-weight="700" fill="#92400e">DB core</text>
+<text x="902" y="402" font-size="11.5" fill="#334155" xml:space="preserve">accounts · roles · tenants</text>
+<text x="902" y="418" font-size="11.5" fill="#334155" xml:space="preserve">persons (projection</text>
+<text x="902" y="434" font-size="11.5" fill="#334155" xml:space="preserve">  + login_email)</text>
+<text x="902" y="450" font-size="11.5" fill="#334155" xml:space="preserve">audit_log (+ actor_via)</text>
+<text x="902" y="466" font-size="11.5" fill="#334155" xml:space="preserve">identity tables dropped at S9</text>
+<line x1="430" y1="128" x2="558" y2="92" stroke="#0d7377" stroke-width="1.8" marker-end="url(#ah-a-t)"/>
+<text x="438" y="92" font-size="10.5" fill="#0d7377" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">Cookie + X-Narya-CSRF</text>
+<line x1="558" y1="120" x2="432" y2="166" stroke="#0d7377" stroke-width="1.8" marker-end="url(#ah-a-t)"/>
+<text x="438" y="180" font-size="10.5" fill="#0d7377" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">204 + X-Narya-Assertion</text>
+<line x1="430" y1="360" x2="558" y2="240" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<text x="500" y="318" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">sign-in · exchange</text>
+<line x1="430" y1="420" x2="558" y2="440" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<text x="440" y="458" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">delegate key +</text>
+<text x="440" y="471" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">assertion + Tenant</text>
+<line x1="600" y1="272" x2="600" y2="338" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<text x="606" y="306" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">eligible-accounts</text>
+<line x1="720" y1="338" x2="720" y2="272" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#ah-a)"/>
+<text x="726" y="306" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">JWKS</text>
+<line x1="790" y1="338" x2="790" y2="272" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<text x="796" y="300" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">admin writes ·</text>
+<text x="796" y="313" font-size="10.5" fill="#64748b" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">revocations</text>
+<line x1="860" y1="110" x2="888" y2="110" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<line x1="985" y1="212" x2="985" y2="238" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<line x1="890" y1="300" x2="862" y2="382" stroke="#9333ea" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<text x="884" y="346" font-size="10.5" fill="#9333ea" text-anchor="start" style="paint-order:stroke;stroke:#fff;stroke-width:3px">eventhandler</text>
+<line x1="860" y1="450" x2="888" y2="450" stroke="#64748b" stroke-width="1.8" marker-end="url(#ah-a)"/>
+<text x="20" y="540" font-size="12" fill="#5a6578">Session lookups 2 → 1; hops unchanged. Core never calls identity-svc on the request path</text>
+<text x="20" y="558" font-size="12" fill="#5a6578">except an unknown-kid JWKS refresh. S2S: per-edge SOPS keys (ADR-0124), mTLS later (S11).</text>
+</svg></div>
+    <p class="diagram-caption" id="arch-caption"></p>
+    <div class="grid-3" style="margin-top:14px">
+      <div class="card"><h3>Session lookups per protected request</h3><div class="stat">2 → 1</div><div style="font-size:14px;color:var(--muted)">ForwardAuth plus Core <code>ResolveSession</code> becomes a single token-hash lookup in identity-svc. Core verifies the signature locally against cached JWKS and re-reads the account fresh.</div></div>
+      <div class="card"><h3>Assertion (ADR-0120)</h3><div style="font-size:13.5px"><code>X-Narya-Assertion</code>: JWS, <code>alg=EdDSA</code>, <code>typ=narya-assertion+jwt</code>, <code>kid</code> in the header. Claims <code>iss aud=core sub sid act? rst? name iat exp≤iat+30s</code>. It carries no role, scope or tenant. Keys are ephemeral per pod, and only the public halves are stored.</div></div>
+      <div class="card"><h3>Service-to-service trust (ADR-0124)</h3><div style="font-size:13.5px">One SOPS bearer key per edge from S4 (<code>AUTH_INTERNAL_API_KEYS</code>, Principal kind <code>Workload</code>), with default-deny NetworkPolicy (<code>:8081</code> accepts Traefik only). mTLS comes later at S11 / <code>TMS-363</code> and is not on the flip path.</div></div>
+    </div>
+  </section>
+
+  <section id="examples">
+    <h2>Worked examples</h2>
+    <p class="section-lead">Four flows traced through the target design, with today's path shown for contrast. Step numbers follow spec rev 38 §7.</p>
+    <div class="filters" id="example-filters">
+      <button class="active" data-ex="req">Protected portal request</button>
+      <button data-ex="signin">Portal sign-in</button>
+      <button data-ex="reset">Admin credential reset</button>
+      <button data-ex="sad">Failure paths</button>
+    </div>
+    <div data-ex-panel="req">
+      <div class="compare">
+        <div class="panel before"><div class="bar">Today · GET /api/v1/portal/devices</div><div class="body"><pre>Browser  cookie __Host-narya_session
+Traefik  strip Person-ID / Account-ID
+         ForwardAuth → core-api
+           /api/v1/auth/forward-auth
+           RequireSession        ← lookup #1
+BFF      delegate key
+         + X-Narya-Session + X-Narya-CSRF
+         + X-Narya-Tenant
+Core     ResolveSession (8-table join) ← lookup #2
+         CSRF authoritative (REG-27)
+         rbac.Decide device:read → 200</pre></div></div>
+        <div class="panel after"><div class="bar">After · same URL, same bytes</div><div class="body"><pre>Traefik  strip … + X-Narya-Assertion
+         ForwardAuth → identity-svc :8081
+           GET /forward-auth   (1 s deadline)
+           one token-hash lookup, no outbound call
+           unsafe method → CSRF compare → 403
+           204 + X-Narya-Assertion (≤30 s)
+BFF      delegate key + assertion (+Tenant)
+         no assertion → 401, Core not called
+Core     registry → BFFAssertionDelegateTenant
+         verify EdDSA vs cached JWKS
+         account WHERE id=act AND person_id=sub
+         authz.Derive → rbac.Decide → BeginTx
+         role removed a moment ago → 403 (fresh read)
+         out of reach → 404 (ADR-0088)</pre></div></div>
+      </div>
+      <p class="diagram-caption">Covers E3-03, E3-09…12, E3-22/23, E3-38 and E3-99. The hop count is unchanged, and Core never calls identity-svc on the request path except to refresh JWKS for an unknown <code>kid</code>.</p>
+    </div>
+    <div data-ex-panel="signin" class="hidden">
+      <div class="compare">
+        <div class="panel before"><div class="bar">Today</div><div class="body"><pre>POST /api/v1/auth/session
+Traefik  auth subtree, no ForwardAuth
+BFF      → Core createSession
+Core     argon2id verify
+         eligible accounts (ADR-0065)
+         session row + audit_log sign_in
+           in the same transaction
+BFF      sets cookies</pre></div></div>
+        <div class="panel after"><div class="bar">After (E3-04, E3-05, E3-41)</div><div class="body"><pre>BFF      → identity-svc POST /internal/v1/sessions
+           (delegate key, IdentityBFFDelegate)
+id-svc   lookup issuer=password; unknown email →
+           refuse, NO decoy hash (ADR-0084)
+         argon2 slot (4/pod, 2 s wait → 503)
+         → Core POST /internal/v1/persons/{id}/
+             eligible-accounts  (Workload key)
+           0 → no_active_account · 1 → select
+           ≥2 → restricted, unselected session
+         ONE tx: session row + outbox sign_in
+BFF      200, today's body bytes, sets cookies
+async    outboxrelay → identity.events →
+         Core eventhandler → audit_log</pre></div></div>
+      </div>
+      <p class="diagram-caption">Audit becomes asynchronous: the row lands in Core's <code>audit_log</code> seconds later, with event-time <code>occurred_at</code> (added by S2a). Platform sign-in follows the same path with <code>plane=platform</code>.</p>
+    </div>
+    <div data-ex-panel="reset" class="hidden">
+      <div class="compare">
+        <div class="panel before"><div class="bar">Today</div><div class="body"><pre>Core resetAccessPersonPassword
+  capability + boundary check
+  write login_identities hash
+  revoke sessions
+  audit_log row
+  → {temporary_password, …}</pre></div></div>
+        <div class="panel after"><div class="bar">After (S4c / S6b, E3-27, E3-84)</div><div class="body"><pre>Core    authorizes (capability, boundary): Core still decides
+Core →  identity-svc POST /internal/v1/persons/{id}/
+          credential-reset   IdentityCoreInternal key
+          actor triple (via=core)
+id-svc  mint temp password + revoke the identity's
+          sessions + outbox person_credential_reset
+          in ONE tx → no-store body
+Core    builds today's response body
+fail    identity-svc down / allowance spent → 503,
+          no Core write · typed 409 no_password_identity</pre></div></div>
+      </div>
+      <p class="diagram-caption">Suspension and session revocation use the same pattern. They are called pre-commit inside Core's transaction under a shared allowance of <code>min(first+3s, deadline−1s)</code>, and a failure rolls back to a 503.</p>
+    </div>
+    <div data-ex-panel="sad" class="hidden">
+      <div class="compare">
+        <div class="panel before"><div class="bar">What can go wrong</div><div class="body"><pre>1. identity-svc is down
+2. A client forges X-Narya-Assertion
+3. Role revoked while the assertion is live
+4. Assertion replayed after 30 s
+5. Unknown kid (pod rotated its key)
+6. Delegate key sent without an assertion</pre></div></div>
+        <div class="panel after"><div class="bar">Designed response</div><div class="body"><pre>1. Traefik empty-body 500 → SPA outage probe
+   /auth/me → outage screen, session kept
+   (E3-19/E3-68; no errors middleware)
+2. stripped at edge (E3-15, S1) + overwritten by
+   authResponseHeaders + signature fails → 401
+3. Core re-reads the account per request → 403
+4. exp ≤ iat+30s, skew ≤5 s → uniform 401
+5. capped unknown-kid JWKS refresh, 2 s pull
+6. BFF refuses 401 without calling Core</pre></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="drift">
+    <h2>Drift analysis: guides vs estate</h2>
+    <p class="section-lead">
+      The comparison covers the Notion RFC (2026-09-22), Outline 03.02.07 (revision 4) and its repo twin, spec rev 38, the Plane tickets and <code>origin/main</code>.
+      “Scope amendment” means rev 38 deliberately changed what Notion says, and the C-numbers are rev 38's corrections.
+    </p>
+    <div class="filters" id="drift-filters">
+      <button class="active" data-drift="all">All</button>
+      <button data-drift="aligned">Aligned</button>
+      <button data-drift="lag">Doc / tracker lag</button>
+      <button data-drift="scope">Scope amendment</button>
+      <button data-drift="open">Still open</button>
+    </div>
+    <table id="drift-table">
+      <thead><tr><th>#</th><th>Topic</th><th>Guide / tracker says</th><th>Estate today</th><th>Class</th></tr></thead>
+      <tbody>
+        <tr data-drift="aligned"><td>D1</td><td>ADRs A–F</td><td>E3-32: ADR-0119…0124 authored at S0</td><td>#478 on main, all <strong>Proposed</strong> (accepted at module close)</td><td><span class="badge done">Aligned</span></td></tr>
+        <tr data-drift="aligned"><td>D2</td><td>Guide vendored</td><td>E3-60: guide under 60 KB in <code>docs/requirements</code>, <code>_index.md</code> row</td><td><code>identity-module-3.md</code> revision 2 (47,768 B) matches Outline revision 4; index row DRAFT covering <code>E3-01…57, 59…65, 67…117</code></td><td><span class="badge done">Aligned</span></td></tr>
+        <tr data-drift="aligned"><td>D3</td><td>Pre-gate Core prep</td><td>E3-96 / E3-97: behaviour-neutral</td><td>#480 (empty golden diff) and #483 (503 opt-in unused by Core) merged</td><td><span class="badge done">Aligned</span></td></tr>
+        <tr data-drift="aligned"><td>D4</td><td>Conformance from day one</td><td>E3-71, E3-82, E3-100</td><td>#490 scaffold carries routetable, strict scope and problem+json bans, with empty route tables</td><td><span class="badge done">Aligned</span></td></tr>
+        <tr data-drift="lag"><td>D5</td><td>Plane slice states</td><td>TMS-332 / 333 / 335 in Backlog</td><td>#480, #483 and #490 merged 2026-09-26</td><td><span class="badge drift">Tracker lag</span></td></tr>
+        <tr data-drift="lag"><td>D6</td><td>Epic ledger</td><td>TMS-327 Backlog, 0 comments</td><td>5 M3 PRs merged; no epic progress comment</td><td><span class="badge drift">Tracker lag</span></td></tr>
+        <tr data-drift="lag"><td>D7</td><td>Notion RFC</td><td>Status "Not started"; E3-01…34 unchecked</td><td>C1–C27 corrections not applied; E3-33 / H9 say a human must edit Notion</td><td><span class="badge stale">Doc lag</span></td></tr>
+        <tr data-drift="lag"><td>D8</td><td>Rev 38 baseline pins</td><td>Pins <code>b0c28d8c</code> / <code>53cea365</code>; #420 limiter open</td><td>#420 merged, so E3-59's limiter move to identity-svc (halved per-pod values) lands in S4b. Re-check at /to-spec</td><td><span class="badge stale">Doc lag</span></td></tr>
+        <tr data-drift="scope"><td>D9</td><td>Requirement count</td><td>Notion: 34 (E3-01…34)</td><td>Rev 38: 115. New rows cover token exchange, S2S keys, reconcile, audit path, cut-over, soak, DR and budgets</td><td><span class="badge ok">Scope amendment</span></td></tr>
+        <tr data-drift="scope"><td>D10</td><td>Assertion transport</td><td>Notion: <code>Authorization: Bearer</code></td><td><code>X-Narya-Assertion</code>, because Authorization carries the delegate key (C10/C21; ADR-0121 amends REG-04)</td><td><span class="badge ok">Scope amendment</span></td></tr>
+        <tr data-drift="scope"><td>D11</td><td>Unknown email</td><td>Notion: costs a full hash</td><td>Refused without a decoy hash (C1, ADR-0084 kept, E3-04, H10)</td><td><span class="badge ok">Scope amendment</span></td></tr>
+        <tr data-drift="scope"><td>D12</td><td>RLS backstop</td><td>Notion's final rollout step: <code>narya.tenant_id</code> + RLS</td><td>Dropped; scope via <code>BindTenant</code> (E3-25), RLS belongs to TMS-278 (C3, E3-63)</td><td><span class="badge ok">Scope amendment</span></td></tr>
+        <tr data-drift="scope"><td>D13</td><td>Outage legibility</td><td>Notion 7b: Traefik <code>errors</code> middleware or SPA</td><td>SPA only (E3-19, E3-68, S10a)</td><td><span class="badge ok">Scope amendment</span></td></tr>
+        <tr data-drift="scope"><td>D14</td><td>mTLS</td><td>Notion: internal calls over mTLS</td><td>No mTLS exists; per-edge SOPS keys from S4, mTLS at S11 = TMS-363 (C20, E3-54)</td><td><span class="badge ok">Scope amendment</span></td></tr>
+        <tr data-drift="scope"><td>D15</td><td>BFF call sites</td><td>Notion: 19</td><td>24: 19 builders plus 5 <code>carry()</code> sites (C9, E3-20)</td><td><span class="badge ok">Scope amendment</span></td></tr>
+        <tr data-drift="scope"><td>D16</td><td>Production</td><td>Notion: cut over prod</td><td>Staging-only flip; production is born with identity-svc (C24, E3-75, ADR-0123)</td><td><span class="badge ok">Scope amendment</span></td></tr>
+        <tr data-drift="scope"><td>D17</td><td>ADR relationship</td><td>Notion: supersedes ADR-0030</td><td>ADR-0119 <em>amends</em> ADR-0030 and ADR-0036 in place</td><td><span class="badge ok">Scope amendment</span></td></tr>
+        <tr data-drift="open"><td>D18</td><td>Entry gate item 3</td><td>TMS-237 golden matrix closed before S3b</td><td>#481 merged; #484 (conflicting), #486 (stacked) and #498 open. S3b through S9 blocked</td><td><span class="badge drift">Still open</span></td></tr>
+        <tr data-drift="open"><td>D19</td><td>Main health</td><td>Green main before flip-path work</td><td><code>ci</code> pending on <code>d57aa286</code>; #498 says red since #481 / #420</td><td><span class="badge drift">Still open</span></td></tr>
+        <tr data-drift="open"><td>D20</td><td>S1b dark deploy</td><td>E3-53 / E3-70: apps plus default-deny from S1</td><td>#497 and infra-gitops #161 open; first-backup check needs a next-day re-run; Argo sync not observed</td><td><span class="badge partial">Partial</span></td></tr>
+        <tr data-drift="open"><td>D21</td><td>Human confirmations</td><td>H1–H43 (Ryan)</td><td>None recorded in any source. The merged pre-gate work implies H3, H5 and H11 in practice</td><td><span class="badge drift">Still open</span></td></tr>
+        <tr data-drift="open"><td>D22</td><td>Readiness bar</td><td>Evaluator ≥97, skeptic review</td><td>96.8 at rev 38; skeptic not run on revs 34–38; 13 OQs on defaults</td><td><span class="badge stale">Still open</span></td></tr>
+        <tr data-drift="open"><td>D23</td><td>DR open items</td><td>DR-O1…O15 closed in the S8 runbook PR</td><td>All open (expected at this stage)</td><td><span class="badge open">Still open</span></td></tr>
+        <tr data-drift="open"><td>D24</td><td>Review follow-ups</td><td>TMS-363…372 needs-triage</td><td>10 untriaged, including TMS-365 (<code>deviceverify.go:59</code>, raised in #490 review) and TMS-370 (audit-loss detector, a production precondition)</td><td><span class="badge open">Still open</span></td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:16px">
+      <strong>Bottom line:</strong> The design docs agree with each other: Outline and the repo match, and Notion is a known-stale predecessor.
+      The code matches the pre-gate plan. The two gaps that matter are <strong>tracker lag</strong> (Plane under-reports three merged slices)
+      and the <strong>TMS-237 gate</strong>, which holds up everything past S3a.
+    </div>
+  </section>
+
+  <section id="requirements">
+    <h2>E3 requirements checklist</h2>
+    <p class="section-lead">
+      These are the 115 rows of guide §8, with status inferred from each row's slice. <em>Done</em> means every slice the row maps to has landed.
+      <em>Partial</em> means some have (S1 counts as partial while S1b is open). <em>Open</em> means none have. Filter by group or status.
+    </p>
+    <div class="filters" id="req-filters-grp"></div>
+    <div class="filters" id="req-filters-st">
+      <button class="active" data-st="all">Any status</button>
+      <button data-st="done">Done</button>
+      <button data-st="partial">Partial</button>
+      <button data-st="open">Open</button>
+    </div>
+    <div class="req-count" id="req-count"></div>
+    <div id="req-list"></div>
+    <div class="callout warn" style="margin-top:14px">
+      <strong>Human confirmations H1–H43</strong> are all unconfirmed in every source. The ones that pre-gate work depends on are
+      <strong>H3, H5, H11, H18, H21 and H27</strong>. H43 must be settled before S8 sign-off, and H8 before S9, which is irreversible.
+      78 decisions are flagged <code>needs_human_confirmation</code> (report §6b).
+    </div>
+  </section>
+
+  <section id="followups">
+    <h2>Follow-ups and what's next</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Still open, in order</h3>
+        <ol class="todo">
+          <li><strong>TMS-237 gate</strong>: land #498 (red main), rebase #484, then #486. This unblocks S3b (Ryan owns it).</li>
+          <li><strong>Plane hygiene</strong>: move TMS-332, TMS-333 and TMS-335 to Done with evidence comments, and add a progress comment on TMS-327.</li>
+          <li><strong>S1b / TMS-337</strong>: merge #497 and infra-gitops #161, re-run the first-backup check, and observe the Argo sync.</li>
+          <li><strong>P3 / TMS-334</strong> and <strong>S2a / TMS-336</strong>: open PRs from the local branches. S2a's merge waits on Ryan's staging duplicate count.</li>
+          <li><strong>Startable now</strong>: S2b / TMS-338 and S3a / TMS-339 (unblocked by #490), S10a / TMS-360, and S10c / TMS-362 (human, by 2026-12-20).</li>
+          <li><strong>Human record</strong>: confirm H3/H5/H11/H18/H21/H27, and apply C1–C27 to Notion (H9 / E3-33).</li>
+          <li><strong>Triage</strong> TMS-363…372.</li>
+          <li><strong>Gated, later</strong>: S3b → S4a–e → S5 → S6 flip (F2, Ryan) → S7 → S8 cut-over and soak → S9 (H8).</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>Where Module 3 sits</h3>
+        <div class="diagram">
+          <svg viewBox="0 0 420 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Module progression">
+            <rect x="10" y="35" width="90" height="50" rx="10" fill="#0d7377"/>
+            <text x="55" y="65" text-anchor="middle" font-size="12" fill="#fff" font-weight="600">M1 ✓</text>
+            <text x="120" y="66" font-size="18" fill="#0d7377">→</text>
+            <rect x="160" y="35" width="90" height="50" rx="10" fill="#fff7ed" stroke="#b45309" stroke-width="2"/>
+            <text x="205" y="58" text-anchor="middle" font-size="12" fill="#b45309" font-weight="600">M2</text>
+            <text x="205" y="74" text-anchor="middle" font-size="10" fill="#b45309">2a gate open</text>
+            <text x="270" y="66" font-size="18" fill="#b45309">→</text>
+            <rect x="310" y="35" width="100" height="50" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2"/>
+            <text x="360" y="58" text-anchor="middle" font-size="12" fill="#1d4ed8" font-weight="600">M3</text>
+            <text x="360" y="74" text-anchor="middle" font-size="10" fill="#1d4ed8">pre-gate · 5/33</text>
+          </svg>
+        </div>
+        <p style="font-size:14px;color:var(--muted);margin:0">
+          M3's pre-gate slices run in parallel with Module 2a. Its gated slices need ADR-0118 (met, #422), the TMS-236 resolver (met),
+          TMS-222 closed (met) and the <strong>TMS-237 golden matrix</strong> (open).
+        </p>
+      </div>
+    </div>
+
+    <div class="card prompt-card">
+      <div class="prompt-head">
+        <div>
+          <h3>Follow-up prompt for the next Module 3 session</h3>
+          <p>Paste this into a new agent session. It reads live Plane first and does not claim Module 3 is closed.</p>
+        </div>
+        <button type="button" class="copy" id="copy-followup-prompt">Copy prompt</button>
+      </div>
+      <pre id="followup-prompt">Continue Identity Module 3 (extract identity into identity-svc) from the progress report. Do not reopen Module 1, and do not implement Module 2 work beyond what the M3 gate needs.
+
+Report: /home/ryan/projects/pma/reports/module3/identity-module-3-report.html
+Guide: docs/requirements/identity-module-3.md (Outline 03.02.07 rev 4); spec of record: /home/ryan/projects/pma/m3-grill-v3/requirements.md rev 38 + dr-runbook-spec.md rev 14
+Handover: /home/ryan/projects/pma/m3-grill-v3/HANDOVER-S2a-P3.md · workflow: m3-grill-v3/workflows/m3-ticket.js
+Tip at report time: d57aa286 (ci pending; #498 claims main red). ADR-0119…0124 Proposed.
+
+State at report time: landed S0a (#478/#479), S0b, P1 (#480), P2 (#483), S1a (#490). S1b (TMS-337) in progress: #497 + infra-gitops #161 open. P3 (TMS-334) and S2a (TMS-336) exist only as local branches without PRs. Gate TMS-237 open (#484, #486, #498).
+
+Priority order:
+1) Live Plane pass on TMS-327 children (TMS-330…362) and follow-ups (TMS-363…372); the newest comment is the record. List tickets whose Plane state lags GitHub (TMS-332/333/335 were Backlog despite merged PRs) and ASK before writing Plane.
+2) Check `git worktree list` for the P3 and S2a branches; if clean and not owned by a live session (check ~/.claude/sessions), take each to a reviewed, green PR. Do not merge. S2a waits on Ryan's staging duplicate count.
+3) Start the unblocked slices one at a time: S2b (TMS-338), S3a (TMS-339), S10a (TMS-360, web-narya), to a green PR each.
+4) Report TMS-237 gate status (#498 → #484 → #486). Do not start S3b or later until TMS-237 is Done.
+5) Stop at human steps: S1b infra, S0b/S7/S8d–g/S9, H-confirmations, SOPS, infra-gitops edge commits, Notion edits (H9).
+
+Deliverable: a short status delta, plus an update to this HTML report (As of + tip + row flips in completion, slice route, drift and E3 status).</pre>
+    </div>
+  </section>
+
+  <footer>
+    Updated 2026-09-26 22:30 (+08). Main tip <code>d57aa286</code> (<code>d57aa2869d2fd65b16faeac820c84ae361055dd6</code>, 21:35 +08).
+    Sources: Plane TMS-327, TMS-330…372 and TMS-237 (live, newest comments); GitHub PMA-Tech/backend-narya #478 #479 #480 #481 #483 #484 #486 #490 #497 #498,
+    infra-ansible #149, infra-gitops #160 #161; Outline 03.02.07 revision 4; Notion RFC (2026-09-22); spec rev 38 and DR rev 14 (m3-grill-v3);
+    ADR-0119…0124 Proposed. Requirement status is inferred from slice evidence. Module 3 is in progress and not closed.
+  </footer>
+</div>
+
+<script>
+const REQS = [{"id": "E3-01", "g": "Service", "t": "<code>services/identity-svc</code> with DB <code>identity_svc</code> holds exactly §6.4&#x27;s five tables; after S9 Core has no credential/token/CSRF column; no pr...", "tier": "smoke; CI from S9; manual", "sl": "S2, S9", "st": "open", "n": "S2a (TMS-336) in flight locally; S2b (TMS-338) startable · gated slices wait on TMS-237"}, {"id": "E3-02", "g": "Service", "t": "Core keeps accounts, roles, capacities, scope, org tree, tenants, keys and every authorization decision", "tier": "unit (S1), full (S6)", "sl": "S1, S6", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open · gated slices wait on TMS-237"}, {"id": "E3-03", "g": "Service", "t": "<code>GET /forward-auth</code> does one indexed lookup, no outbound call and no write, then the §7.2 checks and signing", "tier": "smoke", "sl": "S5", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-04", "g": "Service", "t": "Sign-in per §7.1, BFF-only, both planes; unknown subject refused without a decoy hash; 0/1/2+ accounts refuse/select/restrict", "tier": "smoke (vs Core stub)", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-05", "g": "Service", "t": "Audited identity mutations commit with their <code>identity.audit.recorded</code> outbox event in one transaction; outbox failure fails the mutation...", "tier": "smoke", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-06", "g": "Service", "t": "One timeout set at sign-in and inherited by a rotated session; <code>SESSION_TIMEOUT</code> moves to identity-svc; legacy <code>SESSION_*</code> stay refused", "tier": "unit, smoke", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-07", "g": "Service", "t": "Contract-first: <code>api/openapi.yaml</code>, <code>api/upstreams.yaml</code> (outbound clients, Core stub source) and <code>api/asyncapi.yaml</code>; generated code com...", "tier": "infra check", "sl": "S1", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open"}, {"id": "E3-69", "g": "Service", "t": "BFF-only token exchange: session checks but restricted allowed, no CSRF, names its Core route (<code>for</code>); <code>act</code> iff selected, <code>rst</code> iff must...", "tier": "smoke", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-71", "g": "Service", "t": "Module 1/2 conformance from S1: <code>identity/session</code> Principals, strict scope, root <code>routetable</code> rows, <code>BeginTx</code> with actor, ADR-0105 trigg...", "tier": "unit, smoke", "sl": "S1", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open"}, {"id": "E3-78", "g": "Service", "t": "<code>AUTH_INTERNAL_API_KEYS</code> mints a <code>Workload</code> Key Principal (<code>Ref</code> <code>core</code> or <code>identity-svc</code>); on Core-only admin routes identity-svc binds ...", "tier": "smoke", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-81", "g": "Service", "t": "identity-svc API is exactly §6.4: resource routes with fixed audit actions, zero Unauthenticated rows; ensure idempotent; <code>display_name</code> ...", "tier": "unit, smoke", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-94", "g": "Service", "t": "Activation parity per §7.4: shared gate plus one E3-24 call; refusals from unexported <code>assertedTenantRefusal</code>; BFF relays via `RelaySessi...", "tier": "smoke (stub), full", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-95", "g": "Service", "t": "Password and sign-out parity per §7.4 with fixed gate options; sign-out sits outside the gate (<code>FindSessionForSignOut</code>); no concurrency g...", "tier": "smoke", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-97", "g": "Service", "t": "Pre-gate <code>httpx</code> adds <code>ErrSessionUnavailable</code> and <code>UnavailableOnDependencyFailure</code> (503 vs 401), the assertion header and two undeclared ...", "tier": "unit, smoke, full", "sl": "P2, S4", "st": "partial", "n": "#483 (TMS-333) · gated slices wait on TMS-237"}, {"id": "E3-100", "g": "Service", "t": "Strict tenant scope: every identity-svc checkout carries an <code>identity:&lt;operation&gt;</code> reason; shared code keeps its own; `DB_TENANT_SCOPE_ST...", "tier": "unit, smoke, infra check", "sl": "S1, S9", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open · gated slices wait on TMS-237"}, {"id": "E3-113", "g": "Service", "t": "At most one active password identity per person: identity-svc writers lock <code>persons</code> <code>FOR UPDATE</code>; backstop partial unique index on `logi...", "tier": "smoke, full", "sl": "S2, S4, S8", "st": "open", "n": "S2a (TMS-336) in flight locally; S2b (TMS-338) startable · gated slices wait on TMS-237"}, {"id": "E3-08", "g": "Assertion", "t": "The assertion&#x27;s header, claims and bounds are exactly §6.5&#x27;s final claim table", "tier": "unit", "sl": "S3a", "st": "open", "n": "S3a (TMS-339) startable"}, {"id": "E3-09", "g": "Assertion", "t": "Assertion lifetime at most 30 s: config default 30, max 30, enforced at boot", "tier": "unit", "sl": "S3a", "st": "open", "n": "S3a (TMS-339) startable"}, {"id": "E3-10", "g": "Assertion", "t": "Signing keys per §7.5", "tier": "unit, smoke, deep", "sl": "S3a, S3b, S5", "st": "open", "n": "S3a (TMS-339) startable · gated slices wait on TMS-237"}, {"id": "E3-11", "g": "Assertion", "t": "The assertion is a <code>secret.Token</code>, never logged, traced or put in error bodies; logs carry only ids, kind, method and issuer", "tier": "unit, infra check", "sl": "S3a", "st": "open", "n": "S3a (TMS-339) startable"}, {"id": "E3-35", "g": "Assertion", "t": "<code>internal/platform/identity/assertion</code> mints the Person variant, in depguard <code>identity-mint-*</code> lists, no <code>authz</code> import; unwired until §1...", "tier": "unit, manual", "sl": "S3a", "st": "open", "n": "S3a (TMS-339) startable"}, {"id": "E3-36", "g": "Assertion", "t": "Core validates assertions in-house per §6.5 (EdDSA only, <code>typ</code>, known <code>kid</code>, <code>iss</code>, <code>aud=&quot;core&quot;</code>, signature, 5 s skew); uniform 401, 7c&#x27;&#x27;...", "tier": "unit (fuzz: nightly, E3-74)", "sl": "S3a", "st": "open", "n": "S3a (TMS-339) startable"}, {"id": "E3-37", "g": "Assertion", "t": "The assertion format is disjoint from <code>nik_</code>, <code>dvc_</code>, <code>nka_</code>, <code>nkd_</code> and session tokens", "tier": "unit", "sl": "S3a", "st": "open", "n": "S3a (TMS-339) startable"}, {"id": "E3-50", "g": "Assertion", "t": "Core JWKS cache: 2 s pulls, 5 min refresh, capped unknown-kid refresh, last-good keys kept; fetches only with <code>IDENTITY_BASE_URL</code>/`IDENTI...", "tier": "smoke", "sl": "S3b", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-51", "g": "Assertion", "t": "Assertion clock skew at most 5 s, with a metric for time-validity refusals", "tier": "unit", "sl": "S3a", "st": "open", "n": "S3a (TMS-339) startable"}, {"id": "E3-12", "g": "CSRF", "t": "identity-svc ForwardAuth enforces CSRF on protected routes: any non-GET/HEAD/OPTIONS <code>X-Forwarded-Method</code> needs <code>X-Narya-CSRF</code> matching t...", "tier": "unit, smoke", "sl": "S5", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-13", "g": "CSRF", "t": "A POST without a matching CSRF token is refused at the edge, before the BFF", "tier": "deep, manual", "sl": "S5", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-40", "g": "CSRF", "t": "ForwardAuth middleware sets <code>authRequestHeaders: [Cookie, X-Narya-CSRF]</code>, <code>trustForwardHeader: false</code>; <code>:8081</code> serves only `GET /forward-...", "tier": "infra check, deep, unit", "sl": "S5", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-41", "g": "CSRF", "t": "Auth-subtree writes check CSRF inside identity-svc: password and activation via <code>csrfMatches</code> in today&#x27;s position, sign-out after its lookup", "tier": "smoke, deep", "sl": "S4, S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-14", "g": "Edge", "t": "From F5 the ForwardAuth <code>address</code> is identity-svc&#x27;s in-cluster Service on <code>:8081</code>", "tier": "infra check", "sl": "S7", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-15", "g": "Edge", "t": "<code>X-Narya-Assertion</code> joins <code>narya-portal-bff-strip-client-identity</code> in S1 (and <code>narya-public-strip-client-identity</code> once #158/#153 merge),...", "tier": "infra check", "sl": "S1, S7", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open · gated slices wait on TMS-237"}, {"id": "E3-16", "g": "Edge", "t": "ForwardAuth <code>authResponseHeaders: [X-Narya-Assertion]</code> via a REG-10 contract row, ADR-C amending REG-04; TMS-244 (#152) is moved to M3&#x27;s ...", "tier": "infra check", "sl": "S7", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-17", "g": "Edge", "t": "The <code>/api/v1/auth/</code> subtree, docs, openapi and probes stay exempt from ForwardAuth; <code>/metrics</code> stays behind it", "tier": "infra check", "sl": "S7", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-18", "g": "Edge", "t": "Every BFF route carries the strip middleware; no public ingress outside the tunnel; identity-svc has no IngressRoute", "tier": "infra check", "sl": "S7", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-19", "g": "Edge", "t": "Outage legibility without an edge component: no <code>errors</code> middleware on BFF routes; Traefik&#x27;s empty-body 500 passes through, relying on E3...", "tier": "infra check, deep, manual", "sl": "S7", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-65", "g": "Edge", "t": "Traefik tracing links the ForwardAuth span to identity-svc&#x27;s span", "tier": "deep, manual", "sl": "S7", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-70", "g": "Edge", "t": "Default-deny ingress from S1: <code>:8081</code> admits only Traefik; <code>:8080</code> only BFF, Core pods and CronJobs, httpcheck, kubelet; core-api allow-l...", "tier": "infra check, manual", "sl": "S1", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open"}, {"id": "E3-111", "g": "Edge", "t": "infra-gitops scripts run by Ryan: REG-30 edge check with a <code>pre-flip</code>/<code>post-F5</code> phase argument (S1, S7) and REG-30a redaction canary (S3a...", "tier": "infra check, manual", "sl": "S1, S3a, S4, S7", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open · S3a (TMS-339) startable · gated slices wait on TMS-237"}, {"id": "E3-20", "g": "BFF", "t": "All 24 BFF session-carrying sites replaced: 19 builders relay the assertion; 5 <code>carry()</code> sites call identity-svc or token-exchange; merge...", "tier": "unit, smoke", "sl": "S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-21", "g": "BFF", "t": "The BFF keeps cookie ownership, names and attributes", "tier": "unit", "sl": "S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-38", "g": "BFF", "t": "Core adds <code>BFFAssertionDelegateTenant</code> and <code>BFFAssertionDelegate</code> in REG-10 order, replacing surviving BFF session combinations (gone at ...", "tier": "full", "sl": "S3b, S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-22", "g": "Core", "t": "Core&#x27;s registry dispatches both assertion combinations to <code>identity/assertion</code> (E3-99), verifying locally against cached JWKS", "tier": "smoke", "sl": "S3b", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-23", "g": "Core", "t": "Core <code>AssertionResolver</code> runs one query under <code>auth:resolve-assertion</code> for the active account row, fills <code>SessionAccess</code>, validates with ...", "tier": "smoke", "sl": "S3b", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-24", "g": "Core", "t": "Core <code>POST /internal/v1/persons/{id}/eligible-accounts</code>: identity-svc key only, in-cluster only; sign-in, activation, current-account mod...", "tier": "smoke, manual", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-25", "g": "Core", "t": "Assertion requests are scoped from <code>authz.Access</code> via the existing <code>tenantscope</code> (<code>BindTenant</code>), by construction; no <code>narya.tenant_id</code>; R...", "tier": "smoke", "sl": "S3b", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-39", "g": "Core", "t": "ForwardAuth refuses restricted sessions with today&#x27;s 403, so assertions carry <code>act</code>, never <code>rst</code>; order: lookup, validity, restriction, C...", "tier": "smoke", "sl": "S5", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-42", "g": "Core", "t": "Core&#x27;s <code>persons</code> row stays the projection plus <code>login_email</code> (S2); no S9 column change, FK kept; post-flip Core writes it only per an exh...", "tier": "smoke, full", "sl": "S2", "st": "open", "n": "S2a (TMS-336) in flight locally; S2b (TMS-338) startable"}, {"id": "E3-43", "g": "Core", "t": "Each Core-called §7.9 row calls identity-svc in Core&#x27;s transaction before commit (3 s ceiling, one allowance); failure rolls back, 503; `...", "tier": "full", "sl": "S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-44", "g": "Core", "t": "One audit store <code>audit_log</code>, fed by Core&#x27;s eventhandler from <code>identity.audit.recorded</code>, with exactly today&#x27;s ten action names; screen and...", "tier": "full, manual", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-45", "g": "Core", "t": "Activation/switch follows §7.4 with one E3-24 call, rotates the session with the new <code>act</code> and emits <code>account_switch</code>; no concurrency guard", "tier": "smoke", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-47", "g": "Core", "t": "Admin ops per §7.6 (ensure, reset, relink): Core authorizes then calls identity-svc with key and actor triple; failure rolls back, 503; n...", "tier": "smoke, full", "sl": "S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-62", "g": "Core", "t": "The Person Principal&#x27;s issuer changes from <code>core</code> to <code>identity-svc</code>; <code>DisplayName</code> from <code>name</code>; <code>CarryPrincipal</code> keeps issuer and method ...", "tier": "smoke", "sl": "S3b", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-83", "g": "Core", "t": "New nullable <code>audit_log.actor_via</code> filled by <code>audit.Write</code>: 8-hex delegate-key fingerprint for relayed actions, <code>core</code> for reset/relink, ...", "tier": "smoke", "sl": "S2, S4", "st": "open", "n": "S2a (TMS-336) in flight locally; S2b (TMS-338) startable · gated slices wait on TMS-237"}, {"id": "E3-84", "g": "Core", "t": "Session revocation parity per §7.9: today&#x27;s scope except row 11; row 4 sends every account id, deleted included", "tier": "full (1–8), smoke (9–14)", "sl": "S4, S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-85", "g": "Core", "t": "The four route-less suspend functions are ported and stay route-less; their session and <code>persons.status</code> writes become pre-commit identit...", "tier": "smoke, full", "sl": "S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-90", "g": "Core", "t": "Core applies AUTH-04/AUTH-09 to assertions by row kind: <code>session_state</code> admits <code>rst</code> and no <code>act</code>; <code>account_select</code> admits no <code>act</code>; othe...", "tier": "smoke, full", "sl": "S3b", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-96", "g": "Core", "t": "A pre-gate, behaviour-neutral PR splits <code>AuthBaseRoute</code> into <code>/auth/me</code>, <code>/auth/accounts</code> and residual <code>/api/v1/auth/</code>, with the ADR-0117...", "tier": "full, infra check", "sl": "P1", "st": "done", "n": "#480 (TMS-332)"}, {"id": "E3-98", "g": "Core", "t": "New <code>AUTH_INTERNAL_API_KEYS</code> class (<code>&lt;workload&gt;:&lt;key&gt;</code>): non-delegating, internal rows only, refused on any <code>X-Narya-Edge</code>, <code>Workload</code> Pr...", "tier": "unit, smoke, infra check, manual", "sl": "S4, S11", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-99", "g": "Core", "t": "Core reuses the shared gate: one assertion <code>RequireSession</code> instance per plane; <code>AssertionResolver</code> verifies, runs E3-23&#x27;s query; S3b add...", "tier": "smoke, full", "sl": "S3b", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-101", "g": "Core", "t": "One allowance per Core operation calling identity-svc: <code>min(first call + 3 s, deadline - 1 s)</code> under the 5 s <code>queryTimeout</code>; expiry rolls...", "tier": "smoke, full", "sl": "S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-102", "g": "Core", "t": "identity-svc answers identity-state refusals as closed-enum 409s (<code>subject_taken</code>, <code>no_password_identity</code>, <code>unknown_person</code>); Core maps e...", "tier": "smoke, full", "sl": "S4, S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-103", "g": "Core", "t": "identity-svc returns §6.4&#x27;s fields from the deciding transaction; Core builds byte-identical bodies without a second read and writes proj...", "tier": "smoke, full", "sl": "S4, S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-104", "g": "Core", "t": "identity-svc reads <code>BOOTSTRAP_CREDENTIAL_TTL</code> (72h) and stamps <code>credential_expires_at</code> on ensure-create, re-issue, relink, reset; bootstr...", "tier": "unit, smoke", "sl": "S4, S9", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-105", "g": "Core", "t": "Plaintext passwords in ensure, relink and reset bodies are <code>secret.Token</code>, never logged, <code>no-store</code>; Core mints bootstrap credentials, id...", "tier": "unit, smoke, infra check", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-106", "g": "Core", "t": "S2 adds and backfills <code>persons.login_email</code>; Core writers set it in the same transaction; six reads use it instead of joining `login_iden...", "tier": "smoke, full, infra check", "sl": "S2, S4, S6, S9", "st": "open", "n": "S2a (TMS-336) in flight locally; S2b (TMS-338) startable · gated slices wait on TMS-237"}, {"id": "E3-26", "g": "Frontend", "t": "The SPA treats 401 as signed out and never signs out on a 5xx.", "tier": "unit (web)", "sl": "S10", "st": "open", "n": "S10a (TMS-360) startable"}, {"id": "E3-48", "g": "Frontend", "t": "Outage probe <code>GET /api/v1/auth/me</code> goes BFF-exchange-Core; identity-svc failure gives BFF 502, past the exchange timeout 504, both proble...", "tier": "smoke, deep, manual", "sl": "S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-49", "g": "Frontend", "t": "Cold-load <code>restoreSession()</code> returns <code>none</code> only on 401, never on 5xx, 429, network or non-JSON failure of the second <code>/auth/me</code>.", "tier": "unit (web)", "sl": "S10", "st": "open", "n": "S10a (TMS-360) startable"}, {"id": "E3-68", "g": "Frontend", "t": "<code>lib/service-status.ts</code>: a same-origin <code>/api</code> 5xx without problem+json body triggers the outage probe; problem+json 5xx keep today&#x27;s hand...", "tier": "unit (web), manual", "sl": "S10", "st": "open", "n": "S10a (TMS-360) startable"}, {"id": "E3-27", "g": "Data & ops", "t": "Provisioning is ensure-by-subject, probe-first under a subject advisory lock; only the re-issuable orphan is re-issued, others get `reiss...", "tier": "full", "sl": "S4, S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-28", "g": "Data & ops", "t": "Core one-shot mode <code>identityreconcile</code> reports drift categories (a)-(f) as ids and counts; only write is <code>--repair-login-email</code>; two susp...", "tier": "full, infra check, manual", "sl": "S4, S9", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-29", "g": "Data & ops", "t": "DB restores follow DR-S6/S7/S8 with converge; no retired credential silently returns, no duplicate audit rows; divergence listed or repor...", "tier": "full, manual", "sl": "S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-30", "g": "Data & ops", "t": "<code>identity-svc-api</code>: 2 replicas, no PDB, maxSurge 1/maxUnavailable 0, 128Mi/256Mi, CPU limit 2; 99.5% availability target; ForwardAuth p95...", "tier": "infra check, manual", "sl": "S7, S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-31", "g": "Data & ops", "t": "Owner end to end is Ryan Wong: service, schema, keys, runbooks, alerts and mTLS; infra-ansible changes go through that repo&#x27;s review.", "tier": "manual (H1)", "sl": "S0, S1", "st": "partial", "n": "#478/#479 (TMS-330) · S1a #490 merged; S1b #497 + infra-gitops #161 open"}, {"id": "E3-46", "g": "Data & ops", "t": "<code>platformbootstrap</code> splits: identity half is an init container after <code>migrate</code> with its own lock; Core account half probes first, no pass...", "tier": "smoke, infra check, manual", "sl": "S4, S9", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-52", "g": "Data & ops", "t": "Service parity for identity-svc: services.yaml, README, CLAUDE.md, env examples, compose, RabbitMQ defs, mode allowlist, parity table and...", "tier": "infra check", "sl": "S1, S9", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open · gated slices wait on TMS-237"}, {"id": "E3-53", "g": "Data & ops", "t": "infra-gitops: identity-svc-api and -outboxrelay apps, DB_MAX_CONNS pins, strict scope, step-scoped import Jobs, httpcheck, three core-api...", "tier": "infra check, manual", "sl": "S1, S2, S4, S8, S9", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open · S2a (TMS-336) in flight locally; S2b (TMS-338) startable · gated slices wait on TMS-237"}, {"id": "E3-54", "g": "Data & ops", "t": "S2S auth: one SOPS bearer key per edge from S4 (BFF and Core inbound, identity-svc to Core); no admin key; mTLS layered at S11, not a fli...", "tier": "smoke, infra check, manual", "sl": "S4, S7, S11", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-55", "g": "Data & ops", "t": "At F4, after script 1&#x27;s checksum gate, script 1 revokes every Core session in one transaction with the write-guard; users sign in again.", "tier": "manual (H4)", "sl": "S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-56", "g": "Data & ops", "t": "Rollback stays possible until soak end (at least 14 days); write-guard applied at F4, GRANT is the rollback; no reverse sync; rehearsed f...", "tier": "manual, smoke", "sl": "S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-57", "g": "Data & ops", "t": "Telemetry redaction covers <code>X-Narya-Assertion</code>, <code>X-Narya-Session</code>, <code>X-Narya-CSRF</code>, <code>Authorization</code> and plaintext password fields, via Tra...", "tier": "infra check", "sl": "S3a, S7", "st": "open", "n": "S3a (TMS-339) startable · gated slices wait on TMS-237"}, {"id": "E3-59", "g": "Data & ops", "t": "TMS-245 limits stay: identity-svc reuses #420&#x27;s limiter at halved per-pod values once merged; #155 edge limits scoped and strip client id...", "tier": "infra check, manual", "sl": "S4, S7", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-63", "g": "Data & ops", "t": "Area H is released to TMS-278 by a Plane comment listing FKs M3 changes and out-of-pool readers; identity DB has no RLS table.", "tier": "manual, smoke, infra check (H7)", "sl": "S0", "st": "done", "n": "#478/#479 (TMS-330)"}, {"id": "E3-64", "g": "Data & ops", "t": "argon2id moves via shared package; one semaphore of 4 per pod, wait 2 s then 503; no DB connection held during argon2 waits or the eligib...", "tier": "smoke, manual", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-72", "g": "Data & ops", "t": "Grafana: add identity-svc jobs to service lists, widen alert namespace matchers to <code>apps</code>, widen existing alerts, add key-age, JWKS, refu...", "tier": "manual", "sl": "S1, S7", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open · gated slices wait on TMS-237"}, {"id": "E3-73", "g": "Data & ops", "t": "infra-ansible: DB <code>identity_svc</code> and four roles; import role gets a pinned read-only grant list on <code>core</code>, revoked at S9; connection budg...", "tier": "infra check, unit (H3, H18)", "sl": "S1, S9", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open · gated slices wait on TMS-237"}, {"id": "E3-74", "g": "Data & ops", "t": "Test tiers: smoke contract tests against stubs; deep E2E harness (Traefik, identity-svc, BFF, Core, LGTM) runs nightly and before cut-over.", "tier": "infra check, deep", "sl": "—", "st": "open", "n": "Deep E2E harness not built yet"}, {"id": "E3-76", "g": "Data & ops", "t": "Cut-over is a frozen single flip F1, F1a, F2-F6 with defined abort paths; Core ForwardAuth and session read stay mounted until S9; no han...", "tier": "manual, infra check", "sl": "S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-77", "g": "Data & ops", "t": "Audit contract: <code>identity.events</code> exchange (S1) and <code>core.identity.audit.recorded</code> queue, DLQ, bindings (S4); payload mirrors `audit.Reco...", "tier": "infra check, smoke, manual", "sl": "S1, S4", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open · gated slices wait on TMS-237"}, {"id": "E3-79", "g": "Data & ops", "t": "<code>identityimport</code> runs as <code>identity_svc_import</code>, copies ids and hashes verbatim, has precondition phase (i)-(iv), <code>--dry-run</code>/<code>--replace</code>,...", "tier": "smoke, manual, infra check", "sl": "S2, S9", "st": "open", "n": "S2a (TMS-336) in flight locally; S2b (TMS-338) startable · gated slices wait on TMS-237"}, {"id": "E3-80", "g": "Data & ops", "t": "Budgets: <code>/forward-auth</code> 1 s, BFF route and client timeouts, Core calls 3 s, eligible-accounts 2 s, expiry 503; 5 s drain delay; probe se...", "tier": "smoke, infra check", "sl": "S4", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-82", "g": "Data & ops", "t": "Every BFF, Core and identity-svc 5xx is problem+json, pinned by <code>grep-bans.sh</code> banning <code>http.Error(</code> and literal 5xx <code>WriteHeader</code>.", "tier": "infra check, unit", "sl": "S1", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open"}, {"id": "E3-86", "g": "Data & ops", "t": "Bulk operational steps are DR section 4&#x27;s nine reviewed, idempotent scripts under <code>docs/runbooks/identity-svc/</code>, run by Ryan with output ...", "tier": "smoke, manual", "sl": "S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-87", "g": "Data & ops", "t": "Flip PR: no Core migration, no reachable Core SQL on <code>sessions</code>/<code>login_identities</code> except the legacy set (fail closed 401); checks (a)-(c...", "tier": "infra check, unit, manual", "sl": "S6, S9", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-88", "g": "Data & ops", "t": "Rollback is always a backend forward revert of the flip plus fix-forwards, merged while frozen; re-flip reverts the revert; merge rule fo...", "tier": "manual", "sl": "S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-89", "g": "Data & ops", "t": "Rollback: script 3 revokes identity-svc sessions. Re-flip <code>--replace</code> deletes and reimports in one transaction; refuses on unpublished ou...", "tier": "smoke, manual", "sl": "S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-93", "g": "Data & ops", "t": "Composed availability: Traefik OTLP metrics with router labels; 5xx ratio on the two priority-110 BFF routers over 7 days; panel, weekly ...", "tier": "infra check, manual", "sl": "S7", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-107", "g": "Data & ops", "t": "<code>purge-tenant.sh</code> gains an identity half: Core captures ids to a file after commit, then identity deletes; <code>--identity-rerun</code> and `--late...", "tier": "smoke, manual", "sl": "S8, S9", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-108", "g": "Data & ops", "t": "Pre-gate PR P3 extracts credential primitives into <code>internal/platform/identity/credential</code>; Core re-points; depguard allow-lists core and...", "tier": "unit, full", "sl": "P3", "st": "open", "n": "P3 (TMS-334) in flight on a local branch"}, {"id": "E3-109", "g": "Data & ops", "t": "<code>compose-up-app</code> adds identity-svc and a staging-shaped Traefik ForwardAuth profile; <code>compose-up</code> stays Traefik-free; web dev proxy targe...", "tier": "manual, unit (web), infra check", "sl": "S6, S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-110", "g": "Data & ops", "t": "Write-guard survives infra-ansible converges: <code>write_guarded_tables</code> re-revokes DML after the readwrite GRANT; set after F4, cleared at r...", "tier": "infra check, manual (H26)", "sl": "S1, S8, S9", "st": "partial", "n": "S1a #490 merged; S1b #497 + infra-gitops #161 open · gated slices wait on TMS-237"}, {"id": "E3-114", "g": "Data & ops", "t": "Every out-of-pool M3 Core reader or writer of a TMS-278 RLS table binds a named <code>app.cross_tenant</code> reason before its first read.", "tier": "smoke, manual", "sl": "P3, S2, S8", "st": "open", "n": "P3 (TMS-334) in flight on a local branch · S2a (TMS-336) in flight locally; S2b (TMS-338) startable · gated slices wait on TMS-237"}, {"id": "E3-115", "g": "Data & ops", "t": "Known divergences after a rollback, restore or broker loss are each listed by a script or reported by <code>identityreconcile</code>; an unlisted on...", "tier": "full, manual", "sl": "S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-116", "g": "Data & ops", "t": "<code>dr-runbook-spec.md</code> holds DR-S1-S10, scripts and DR-O entries; S8 runbook PR maps each DR-S to a runbook section and closes every DR-O b...", "tier": "manual", "sl": "S8", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-117", "g": "Data & ops", "t": "Credential patch runbook kept in every era: P3 re-points, S2 adds <code>login_email</code> dual-write, S8 a post-flip variant; binds `script:credent...", "tier": "smoke, manual", "sl": "P3, S2, S8, S9", "st": "open", "n": "P3 (TMS-334) in flight on a local branch · S2a (TMS-336) in flight locally; S2b (TMS-338) startable · gated slices wait on TMS-237"}, {"id": "E3-32", "g": "Governance", "t": "ADRs A-F per spec section 13, numbered at authoring time; ADR-A amends ADR-0030 and ADR-0036 and restates ADR-0030&#x27;s kept decisions.", "tier": "infra check, manual", "sl": "S0", "st": "done", "n": "#478/#479 (TMS-330)"}, {"id": "E3-33", "g": "Governance", "t": "Correct the RFC/Notion prose: the edge, not the BFF, obtains the assertion; apply C1-C27.", "tier": "manual", "sl": "—", "st": "open", "n": "Notion not corrected (C1–C27); human-only (H9)"}, {"id": "E3-60", "g": "Governance", "t": "Every E3 row has a traceability entry; M3 guide under 60 KB vendored to docs/requirements; <code>_index.md</code> row with three ranges; gatelib ID ...", "tier": "infra check", "sl": "S0", "st": "done", "n": "#478/#479 (TMS-330)"}, {"id": "E3-61", "g": "Governance", "t": "Minimal delegation chain: <code>aud</code> pinned per hop, delegating credential in <code>actor_via</code>, grant ids deferred; recorded in TMS-216 amendment a...", "tier": "smoke, manual (H12, H15)", "sl": "S10", "st": "open", "n": "S10a (TMS-360) startable"}, {"id": "E3-67", "g": "Governance", "t": "The inherited D2 review of any-delegate-key-asserts-any-tenant is due at the earlier of the counting F6 and 2026-12-20 (H13).", "tier": "manual (H13)", "sl": "S10", "st": "open", "n": "S10a (TMS-360) startable"}, {"id": "E3-75", "g": "Governance", "t": "ADR-E records production is born with identity-svc, with reopen triggers; prod restore objectives and three production-launch preconditio...", "tier": "manual (H2, H21)", "sl": "S0", "st": "done", "n": "#478/#479 (TMS-330)"}, {"id": "E3-92", "g": "Governance", "t": "Core auth routes: <code>getMe</code>, <code>listMyAccounts</code>, <code>getTenantExistence</code> stay; six session routes retire at S9, mounted and fail-closed until then.", "tier": "infra check, unit, full", "sl": "S0, S9", "st": "partial", "n": "#478/#479 (TMS-330) · gated slices wait on TMS-237"}, {"id": "E3-34", "g": "Unchanged", "t": "Spec section 2.3 (unchanged external behaviour) holds.", "tier": "full, manual", "sl": "—", "st": "partial", "n": "Invariant: holds so far (P1 empty golden diff; no user-visible change yet). Proven only at the flip."}, {"id": "E3-91", "g": "Unchanged", "t": "The only status-code exceptions are eleven classes, each golden row tagged <code>REG-45 change</code> (mostly dependency failures 401/500 to 503; ed...", "tier": "full, deep (8–9)", "sl": "S3b, S4, S5, S6", "st": "open", "n": "gated slices wait on TMS-237"}, {"id": "E3-112", "g": "Unchanged", "t": "identity-svc sets problem+json <code>instance</code> on browser-reachable bodies from a fixed per-route map to today&#x27;s Core path, never its own.", "tier": "unit, smoke", "sl": "S4, S5", "st": "open", "n": "gated slices wait on TMS-237"}];
+const SLICES = [["Pre-gate", null], ["S0a", "TMS-330", "ADRs A–F Proposed, traceability, M3 guide", "pre", "done", "agent", "#478, #479 merged; Plane Done", "E3-31, 32, 60, 63, 75, 92"], ["S0b", "TMS-331", "Comments on other owners’ tickets (H12)", "pre", "done human", "Ryan", "11 comments confirmed; Plane Done", "—"], ["P1", "TMS-332", "AuthBaseRoute split + ADR-0117 amendment", "pre", "lag", "agent", "#480 merged 10:38; Plane still Backlog", "E3-96"], ["P2", "TMS-333", "httpx 503 opt-in, assertion contract names", "pre", "lag", "agent", "#483 merged 21:35; Plane still Backlog", "E3-97"], ["P3", "TMS-334", "Shared credential package + depguard", "pre", "prog", "agent", "Local branch, 7 commits, no PR", "E3-108, E3-117"], ["S1a", "TMS-335", "identity-svc scaffold and conformance", "pre", "lag", "agent", "#490 merged 21:35 (main tip); Plane still Backlog", "E3-07, 71, 82, 100 (+S1 infra rows)"], ["S1b", "TMS-337", "Dark deploy: infra-ansible, infra-gitops, SOPS", "pre", "prog human", "Ryan", "#149, #160 merged; #497 + gitops #161 open; backup re-check, Argo sync unobserved", "E3-53, 70, 72, 73, 110, 111, 15"], ["S2a", "TMS-336", "Core actor_via, occurred_at, persons.login_email", "pre", "prog", "agent", "Local branch, 2 commits, no PR; merge needs Ryan’s staging duplicate count", "E3-42, 79, 106, 114"], ["S2b", "TMS-338", "Identity schema + identityimport dry run", "pre", "ready", "agent", "Unblocked by #490", "E3-01, 53, 83, 113, 117"], ["S3a", "TMS-339", "Signing keys, JWKS, mint/verify (unwired)", "pre", "ready", "agent", "Unblocked by #490", "E3-08–11, 35–37, 51, 57"], ["Gated · TMS-237", null], ["S3b", "TMS-340", "Core accepts identity assertions", "gated", "gated", "agent", "Needs TMS-237; must add httpx.AssertionHeader alias (review note)", "E3-22, 23, 25, 50, 62, 90, 99"], ["S4a", "TMS-341", "S2S authentication for identity-svc", "gated", "gated", "agent", "Needs TMS-237; replaces S1a placeholder route rows", "E3-54, 64, 69"], ["S4b", "TMS-342", "Session routes + Core eligible-accounts", "gated", "gated", "agent", "Also takes the #420 limiter move (E3-59)", "E3-04, 41, 44, 45"], ["S4c", "TMS-343", "identity-svc admin write routes", "gated", "gated", "agent", "—", "E3-27, 28, 84"], ["S4d", "TMS-344", "Identity audit path into Core audit_log", "gated", "gated", "agent", "Needs TMS-237", "E3-05, 77, 78"], ["S4e", "TMS-345", "Bootstrap split + identityreconcile", "gated", "gated", "agent", "—", "E3-46, 80, 81"], ["S5", "TMS-346", "ForwardAuth on :8081 with edge CSRF", "gated", "gated", "agent", "—", "E3-03, 12, 13, 39, 40"], ["Flip", null], ["S6a", "TMS-347", "BFF relay rewrite (into m3-flip)", "gated", "gated", "agent", "—", "E3-20, 21"], ["S6b", "TMS-348", "Core switch: admin writes, suspension, revocation", "gated", "gated", "agent", "—", "E3-43, 47, 48"], ["S6c", "TMS-349", "Bootstrap account half, flip checks, local dev", "gated", "gated", "agent", "—", "E3-87, 109"], ["S6", "TMS-350", "Integrate the flip PR (merged at F2 by Ryan)", "gated", "gated human", "Ryan merges", "Needs TMS-237 green", "E3-02, 85, 87"], ["S7", "TMS-351", "Edge preparation and alerts", "gated", "gated human", "Ryan", "—", "E3-14–19, 30, 65, 93"], ["Cut-over", null], ["S8a", "TMS-352", "Scripts 1, 2, 6, 8 + dedupe", "gated", "gated", "agent", "—", "E3-86, 88"], ["S8b", "TMS-353", "Script 5, the delta report", "gated", "gated", "agent", "—", "E3-89"], ["S8c", "TMS-354", "Scripts 3, 4, 7, 9 + purge identity half", "gated", "gated", "agent", "—", "E3-107, 115"], ["S8d", "TMS-355", "DR runbooks, cut-over Jobs, S8 runbook PR", "gated", "gated human", "Ryan", "Closes DR-O1…O15", "E3-55, 116"], ["S8e", "TMS-356", "Load test + rollback drill (DR-S5)", "gated", "gated human", "Ryan", "—", "E3-30, 88"], ["S8f", "TMS-357", "Cut-over F1–F6 on staging", "gated", "gated human", "Ryan", "All users sign in again (H4)", "E3-76"], ["S8g", "TMS-358", "Soak ≥14 d, DR-S10 restore drill, sign-off", "gated", "gated human", "Ryan", "—", "E3-56"], ["S9", "TMS-359", "Retire Core identity tables (irreversible, H8)", "gated", "gated human", "Ryan", "After soak end + S8 sign-off + DR-S10 pass", "E3-01, 92, 100, 104"], ["Web / review", null], ["S10a", "TMS-360", "SPA outage rule + cold-load fix (web-narya)", "pre", "ready", "agent", "Startable now", "E3-26, 61, 68"], ["S10b", "TMS-361", "Minimal delegation chain", "pre", "gated", "agent", "—", "E3-49"], ["S10c", "TMS-362", "D2 risk review (by 2026-12-20, H13)", "pre", "ready human", "Ryan", "Startable now", "E3-67"], ["S11", "TMS-363", "mTLS for identity-svc edges (follow-up)", "—", "gated", "triage", "Outside the epic; needs-triage", "E3-54, 98"]];
+
+function wire(groupSel, fn) {
+  document.querySelectorAll(groupSel + " button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(groupSel + " button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      fn(btn);
+    });
+  });
+}
+
+// Requirements
+const list = document.getElementById("req-list");
+const groups = [...new Set(REQS.map(r => r.g))];
+const grpBar = document.getElementById("req-filters-grp");
+grpBar.innerHTML = '<button class="active" data-g="all">All groups</button>' +
+  groups.map(g => `<button data-g="${g}">${g} <span style="opacity:.6">${REQS.filter(r => r.g === g).length}</span></button>`).join("");
+let fG = "all", fS = "all";
+function badge(st) {
+  if (st === "done") return '<span class="badge done">Done</span>';
+  if (st === "partial") return '<span class="badge partial">Partial</span>';
+  return '<span class="badge open">Open</span>';
+}
+function renderReq() {
+  const rows = REQS.filter(r => (fG === "all" || r.g === fG) && (fS === "all" || r.st === fS));
+  document.getElementById("req-count").textContent = `${rows.length} of ${REQS.length} requirements`;
+  list.innerHTML = rows.map(o => `<details class="req"><summary><span class="rid">${o.id}</span><span class="rt">${o.t}</span><span><span class="rs">${o.sl}</span>${badge(o.st)}</span></summary>
+    <div class="body">${o.n ? "<strong>Evidence:</strong> " + o.n + "<br>" : ""}Group ${o.g} · slice ${o.sl} · test tier ${o.tier}. Source: Outline 03.02.07 §8 (= spec rev 38).</div></details>`).join("");
+}
+renderReq();
+wire("#req-filters-grp", b => { fG = b.dataset.g; renderReq(); });
+wire("#req-filters-st", b => { fS = b.dataset.st; renderReq(); });
+
+// Slice route
+const strip = document.getElementById("route-strip");
+const detail = document.getElementById("route-detail");
+const STLABEL = { done: "Landed", lag: "Merged · Plane lag", prog: "In progress / in flight", ready: "Startable now", gated: "Gated" };
+strip.innerHTML = SLICES.map((s, i) => {
+  if (s[1] === null) return `<span class="phase">${s[0]}</span>`;
+  return `<button class="chip ${s[4]}" data-i="${i}">${s[0]}<small>${s[1].replace("TMS-", "")}</small></button>`;
+}).join("");
+function showSlice(i) {
+  const s = SLICES[i];
+  strip.querySelectorAll(".chip").forEach(c => c.classList.toggle("sel", +c.dataset.i === i));
+  const main = s[4].split(" ")[0];
+  const human = s[4].includes("human");
+  detail.innerHTML = `<h3>${s[0]} · <code>${s[1]}</code></h3><div>${s[2]}</div>
+    <dl><dt>Status</dt><dd>${STLABEL[main]}${human ? " · human-owned" : ""}</dd>
+    <dt>Gate</dt><dd>${s[3] === "pre" ? "Pre-gate (may start now, H5)" : s[3] === "gated" ? "Gated: TMS-237 golden matrix plus predecessors" : "Outside the epic"}</dd>
+    <dt>Owner</dt><dd>${s[5]}</dd><dt>Evidence</dt><dd>${s[6]}</dd><dt>Key E3 rows</dt><dd>${s[7]}</dd></dl>`;
+}
+strip.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => showSlice(+c.dataset.i)));
+showSlice(SLICES.findIndex(s => s[0] === "S1b"));
+
+// Architecture tabs
+const CAPS = {
+  before: "Before Module 3: Core is both the identity provider and the authorizer. ForwardAuth and the BFF call each resolve the session separately. Red rows are what Module 3 moves out.",
+  now: "Main d57aa286: traffic is unchanged. identity-svc exists as a scaffold with empty route tables, and its database is live on staging. P1 and P2 prepared Core without changing its behaviour.",
+  after: "After S9: identity-svc owns credentials, sessions, CSRF and signing keys, and mints the assertion at the edge. Core verifies it locally and still makes every authorization decision."
+};
+const cap = document.getElementById("arch-caption");
+cap.textContent = CAPS.before;
+wire("#arch-filters", b => {
+  document.querySelectorAll("[data-arch-panel]").forEach(p => p.classList.toggle("hidden", p.dataset.archPanel !== b.dataset.arch));
+  cap.textContent = CAPS[b.dataset.arch];
+});
+
+// Examples, drift
+wire("#example-filters", b => {
+  document.querySelectorAll("[data-ex-panel]").forEach(p => p.classList.toggle("hidden", p.dataset.exPanel !== b.dataset.ex));
+});
+wire("#drift-filters", b => {
+  const f = b.dataset.drift;
+  document.querySelectorAll("#drift-table tbody tr").forEach(tr => tr.classList.toggle("hidden", f !== "all" && tr.dataset.drift !== f));
+});
+
+// TOC
+wire("#toc", b => document.getElementById(b.dataset.target).scrollIntoView({ behavior: "smooth" }));
+const tocBtns = [...document.querySelectorAll("#toc button")];
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    tocBtns.forEach(b => b.classList.toggle("active", b.dataset.target === e.target.id));
+  });
+}, { rootMargin: "-30% 0px -60% 0px", threshold: 0 });
+tocBtns.forEach(b => io.observe(document.getElementById(b.dataset.target)));
+
+// Copy prompt
+const copyBtn = document.getElementById("copy-followup-prompt");
+const promptEl = document.getElementById("followup-prompt");
+copyBtn.addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(promptEl.textContent); }
+  catch {
+    const range = document.createRange(); range.selectNodeContents(promptEl);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    document.execCommand("copy"); sel.removeAllRanges();
+  }
+  copyBtn.classList.add("copied"); copyBtn.textContent = "Copied";
+  setTimeout(() => { copyBtn.classList.remove("copied"); copyBtn.textContent = "Copy prompt"; }, 1600);
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Identity Module 2 — Credential Registry Progress Report</title>
+<style>
+  :root {
+    --ink: #1a2332;
+    --muted: #5a6578;
+    --line: #d8dee8;
+    --paper: #f7f5f0;
+    --card: #ffffff;
+    --accent: #0d7377;
+    --accent-soft: #e6f4f4;
+    --warn: #b45309;
+    --warn-soft: #fff7ed;
+    --bad: #b91c1c;
+    --bad-soft: #fef2f2;
+    --good: #047857;
+    --good-soft: #ecfdf5;
+    --open: #1d4ed8;
+    --open-soft: #eff6ff;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Fraunces", Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #dfeceb 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, #efe8dc 0%, transparent 50%),
+      var(--paper);
+    line-height: 1.55;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 20px 80px; }
+  header.hero {
+    display: grid;
+    gap: 18px;
+    padding: 28px 0 10px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .kicker {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    line-height: 1.15;
+    margin: 0;
+    max-width: 18ch;
+  }
+  .lede { font-size: 1.05rem; color: var(--muted); max-width: 62ch; margin: 0; }
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 10px;
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .pill strong { color: var(--ink); font-weight: 600; }
+  .pill.good { background: var(--good-soft); border-color: #a7f3d0; color: var(--good); }
+  .pill.warn { background: var(--warn-soft); border-color: #fed7aa; color: var(--warn); }
+  .pill.bad { background: var(--bad-soft); border-color: #fecaca; color: var(--bad); }
+
+  nav.toc {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, white);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    margin: 0 -20px 28px;
+    padding: 10px 20px;
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  nav.toc button {
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 7px 11px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  nav.toc button:hover, nav.toc button.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  section { margin: 0 0 42px; scroll-margin-top: 64px; }
+  h2 {
+    font-family: var(--display);
+    font-size: 1.55rem;
+    margin: 0 0 8px;
+  }
+  h3 { font-size: 1.05rem; margin: 22px 0 8px; }
+  .section-lead { color: var(--muted); margin: 0 0 18px; max-width: 70ch; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 860px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 0 rgba(26,35,50,0.03);
+  }
+  .card h3 { margin-top: 0; }
+  .stat {
+    font-family: var(--display);
+    font-size: 2rem;
+    line-height: 1;
+    margin: 4px 0 6px;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    background: #eef1f6;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  tr:last-child td { border-bottom: 0; }
+  tr.clickable { cursor: pointer; }
+  tr.clickable:hover td { background: #fafaf8; }
+  tr.selected td { background: var(--accent-soft); }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .badge.done { background: var(--good-soft); color: var(--good); }
+  .badge.open { background: var(--open-soft); color: var(--open); }
+  .badge.stale { background: var(--warn-soft); color: var(--warn); }
+  .badge.drift { background: var(--bad-soft); color: var(--bad); }
+  .badge.ok { background: var(--accent-soft); color: var(--accent); }
+
+  .prompt-card { margin-top: 16px; }
+  .prompt-card .prompt-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .prompt-card .prompt-head h3 { margin: 0; }
+  .prompt-card .prompt-head p {
+    margin: 4px 0 0; font-size: 13px; color: var(--muted); max-width: 62ch;
+  }
+  .prompt-card button.copy {
+    border: 1px solid var(--line);
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .prompt-card button.copy:hover { border-color: var(--accent); }
+  .prompt-card button.copy.copied {
+    background: var(--good-soft);
+    color: var(--good);
+    border-color: #a7f3d0;
+  }
+  .prompt-card pre {
+    margin: 0;
+    padding: 14px 16px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    overflow-x: auto;
+  }
+  .diagram svg { display: block; width: 100%; height: auto; max-width: 1000px; margin: 0 auto; }
+  .diagram-caption {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 10px 4px 0;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 860px) { .compare { grid-template-columns: 1fr; } }
+  .compare .panel {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--card);
+    overflow: hidden;
+  }
+  .compare .panel .bar {
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .compare .before .bar { background: #f3e8e8; color: #7f1d1d; }
+  .compare .after .bar { background: var(--accent-soft); color: var(--accent); }
+  .compare .panel .body { padding: 14px; }
+  .compare pre, .example pre {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .filters button {
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .filters button.active {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+
+  details.req {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  details.req summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 11px 14px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+  details.req summary::-webkit-details-marker { display: none; }
+  details.req[open] summary { border-bottom: 1px solid var(--line); }
+  details.req .body { padding: 12px 14px 14px; color: var(--muted); font-size: 14px; }
+  code, .mono { font-family: var(--mono); font-size: 0.92em; }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 12px 14px;
+    border-radius: 0 10px 10px 0;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  .callout.warn { border-color: var(--warn); background: var(--warn-soft); }
+  .callout.bad { border-color: var(--bad); background: var(--bad-soft); }
+
+  .timeline {
+    display: grid;
+    gap: 0;
+    border-left: 2px solid var(--line);
+    margin-left: 10px;
+    padding-left: 18px;
+  }
+  .tl-item { position: relative; padding: 0 0 18px; }
+  .tl-item::before {
+    content: "";
+    position: absolute;
+    left: -25px; top: 6px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--paper);
+  }
+  .tl-item .when { font-size: 12px; color: var(--muted); }
+  .tl-item .what { font-weight: 600; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .hidden { display: none !important; }
+
+  .prompt-card { margin-top: 16px; }
+  .prompt-card .prompt-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .prompt-card .prompt-head h3 { margin: 0; }
+  .prompt-card .prompt-head p {
+    margin: 4px 0 0; font-size: 13px; color: var(--muted); max-width: 62ch;
+  }
+  .prompt-card button.copy {
+    border: 1px solid var(--line);
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .prompt-card button.copy:hover { border-color: var(--accent); }
+  .prompt-card button.copy.copied {
+    background: var(--good-soft);
+    color: var(--good);
+    border-color: #a7f3d0;
+  }
+  .prompt-card pre {
+    margin: 0;
+    padding: 14px 16px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .badge.partial { background: var(--warn-soft); color: var(--warn); }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Narya · Identity consolidation · Module 2 of 3</div>
+    <h1>One Credential Registry — what landed, and what is still open</h1>
+    <p class="lede">
+      Progress report for <strong>Identity Module 2</strong> against GitHub / infra-gitops merges
+      and Outline <em>03.02.06 · One Credential Registry</em>
+      (<code>REG-01</code>…<code>45</code>, <code>IKY-01</code>…<code>21</code>, <code>UI-01</code>).
+      Module 1 is closed. Module 2a has a foundation on <code>main</code> (#422, #421, infra edge work);
+      ADR-0118 is still <strong>Proposed</strong>; 2b/2c and the golden matrix are largely open.
+    </p>
+    <div class="meta-row">
+      <span class="pill good"><strong>2a foundation</strong> #422 registry</span>
+      <span class="pill good"><strong>BFF integrity</strong> #421 / TMS-240</span>
+      <span class="pill warn"><strong>ADR-0118</strong> Proposed</span>
+      <span class="pill warn"><strong>2b / 2c</strong> not started</span>
+      <span class="pill"><strong>As of</strong> 2026-09-26 · 10:30</span>
+      <span class="pill"><strong>Main tip</strong> 1f849f73</span>
+    </div>
+  </header>
+
+  <nav class="toc" id="toc">
+    <button data-target="verdict" class="active">Verdict</button>
+    <button data-target="completion">Completion</button>
+    <button data-target="architecture">Architecture</button>
+    <button data-target="examples">Examples</button>
+    <button data-target="drift">Drift analysis</button>
+    <button data-target="requirements">REG / IKY / UI</button>
+    <button data-target="followups">Follow-ups</button>
+  </nav>
+
+  <section id="verdict">
+    <h2>Verdict</h2>
+    <p class="section-lead">
+      Module 2’s <em>seam</em> is the credential registry: one <code>CombinationID</code> per request,
+      declared on every route, before any Principal adapter runs (ADR-0118 / REG-01…06).
+      That resolver and the first admission slice are on <code>main</code>. The module is
+      <strong>not closed</strong> — golden matrix (REG-23), REG-43/44 edge+delegate end-state,
+      integration keys (2b) and operator UI (2c) remain.
+    </p>
+    <div class="grid-3">
+      <div class="card">
+        <div class="stat-label">REG-01…45 (2a)</div>
+        <div class="stat" style="color:var(--warn)">18 / 46</div>
+        <div>18 done · 17 partial · 11 open</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">IKY + UI (2b/2c)</div>
+        <div class="stat" style="color:var(--bad)">0 / 22</div>
+        <div>Integration keys + operator UI not started</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Module close</div>
+        <div class="stat" style="color:var(--warn)">In progress</div>
+        <div>TMS-234 epic open; ADR-0118 Proposed</div>
+      </div>
+    </div>
+    <div class="callout warn" style="margin-top:18px">
+      <strong>Source note.</strong> Plane MCP not available in this session — ticket states for Backlog
+      items are inferred from GitHub / infra-gitops merges and the morning
+      <code>m3-grill/facts-plane.md</code> dump (stale for close claims). Requirements body:
+      vendored <code>docs/requirements/module-2-credential-registry.md</code> (Outline 03.02.06 rev 12).
+      Outline live fetch may 403 off the office network. Tip <code>1f849f73</code> re-checked
+      2026-09-26.
+    </div>
+  </section>
+
+  <section id="completion">
+    <h2>What completed — tickets vs GitHub / infra</h2>
+    <p class="section-lead">
+      Module 2 spans backend-narya and infra-gitops. Newest Plane comment is authoritative when
+      available; merges below are the code record.
+    </p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Plane / tickets (inferred)</h3>
+        <table>
+          <thead><tr><th>Item</th><th>State</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td><code>TMS-234</code> epic 2a</td><td><span class="badge open">Open</span></td><td>Registry &amp; route collapse; not closed</td></tr>
+            <tr><td><code>TMS-235</code> epic 2b/2c</td><td><span class="badge open">Open</span></td><td>Integration keys + UI; no implementation PRs</td></tr>
+            <tr><td><code>TMS-236</code></td><td><span class="badge partial">Partial</span></td><td>#422 first slice + ADR-0118 Proposed; golden matrix / later slices remain</td></tr>
+            <tr><td><code>TMS-240</code></td><td><span class="badge done">Done</span></td><td>#421 BFF builds Core requests from scratch (REG-11)</td></tr>
+            <tr><td><code>TMS-244</code></td><td><span class="badge done">Done</span></td><td>infra-gitops #152 ForwardAuth header constraints</td></tr>
+            <tr><td><code>TMS-246</code></td><td><span class="badge partial">Partial</span></td><td>infra #158 identity-strip Middleware (step 1 of 2)</td></tr>
+            <tr><td><code>TMS-247/248</code></td><td><span class="badge done">Done</span></td><td>infra #150 / #148 NetBird + ForwardAuth mesh path</td></tr>
+            <tr><td><code>TMS-250</code></td><td><span class="badge done">Done</span></td><td>infra #154 default-deny NetworkPolicy (REG-32)</td></tr>
+            <tr><td><code>TMS-252</code></td><td><span class="badge done">Done</span></td><td>infra #156 credential redaction (REG-30a)</td></tr>
+            <tr><td><code>TMS-254</code></td><td><span class="badge partial">Partial</span></td><td>Caller-search / REG-38 decision recorded (report artifact)</td></tr>
+            <tr><td><code>TMS-258</code></td><td><span class="badge partial">Partial</span></td><td>mTLS / workload-identity decision+plan (REG-34); enforce later</td></tr>
+            <tr><td><code>TMS-237</code></td><td><span class="badge open">Open</span></td><td>Golden matrix (REG-23) — no merged PR found</td></tr>
+            <tr><td><code>TMS-241</code></td><td><span class="badge open">Open</span></td><td>Core authoritative CSRF (REG-27)</td></tr>
+            <tr><td><code>TMS-245</code></td><td><span class="badge open">Open</span></td><td>#420 open — sign-in rate limits</td></tr>
+            <tr><td><code>TMS-255/257</code></td><td><span class="badge open">Open</span></td><td>Edge refuse + delegate-on-every-BFF (REG-43/44 lane)</td></tr>
+            <tr><td><code>TMS-291</code></td><td><span class="badge done">Done</span></td><td>#476 — Module 1 residue; adjacent, not a Module 2 REG close</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Merged timeline</h3>
+        <div class="timeline">
+          <div class="tl-item"><div class="when">2026-09-22</div><div class="what">infra #148 NetBird via Traefik (TMS-248) · agents Plane docs #404</div></div>
+          <div class="tl-item"><div class="when">2026-09-25 06:29</div><div class="what"><a href="https://github.com/PMA-Tech/backend-narya/pull/422">#422</a> ADR-0118 + registry Resolve / ClassifyShape / Observe (TMS-236)</div></div>
+          <div class="tl-item"><div class="when">2026-09-25</div><div class="what">infra #152 TMS-244 · #154 TMS-250 · #156 TMS-252 · #158 TMS-246</div></div>
+          <div class="tl-item"><div class="when">2026-09-25 15:32</div><div class="what"><a href="https://github.com/PMA-Tech/backend-narya/pull/421">#421</a> BFF request integrity (TMS-240 / REG-11)</div></div>
+          <div class="tl-item"><div class="when">2026-09-26 02:14</div><div class="what"><a href="https://github.com/PMA-Tech/backend-narya/pull/476">#476</a> TMS-291 capability accessor (M1 follow-up; listed for adjacency)</div></div>
+        </div>
+        <h3 style="margin-top:18px">Slice → requirement map</h3>
+        <table>
+          <thead><tr><th>Work</th><th>PR</th><th>Primary REGs</th></tr></thead>
+          <tbody>
+            <tr><td>Registry + ADR</td><td>#422</td><td>01–06, 09, 14, 16, 18, 20–22, 35</td></tr>
+            <tr><td>BFF integrity</td><td>#421</td><td>11 (CSRF/origin/build-from-scratch)</td></tr>
+            <tr><td>Edge / NetBird / NP</td><td>infra #148–158</td><td>28–32, 30a, 36 partial</td></tr>
+            <tr><td>Caller search decision</td><td>TMS-254 artifact</td><td>38 (plan, not enforce)</td></tr>
+            <tr><td>mTLS plan</td><td>TMS-258 artifact</td><td>34 (dated commitment)</td></tr>
+            <tr><td>Golden matrix</td><td>—</td><td>23 — open</td></tr>
+            <tr><td>Edge refuse + delegate</td><td>—</td><td>43, 44 — open</td></tr>
+            <tr><td>Integration keys / UI</td><td>—</td><td>IKY-01…21, UI-01 — open</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="architecture">
+    <h2>Architecture — before and after</h2>
+    <p class="section-lead">
+      Same HTTP surfaces. The change is that credential acceptance becomes an explicit
+      <code>CombinationID</code> resolved once, then checked against the route table — not implicit
+      middleware that silently ignores the wrong credential family.
+    </p>
+    <div class="compare">
+      <div class="panel before">
+        <div class="bar">Before</div>
+        <div class="body">
+          <div class="diagram">
+            <svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Before: separate middleware paths">
+              <rect x="10" y="20" width="120" height="40" rx="8" fill="#fef2f2" stroke="#fca5a5"/>
+              <text x="70" y="45" text-anchor="middle" font-size="11" fill="#7f1d1d">BFF session path</text>
+              <rect x="10" y="80" width="120" height="40" rx="8" fill="#fef2f2" stroke="#fca5a5"/>
+              <text x="70" y="105" text-anchor="middle" font-size="11" fill="#7f1d1d">API key path</text>
+              <rect x="10" y="140" width="120" height="40" rx="8" fill="#fef2f2" stroke="#fca5a5"/>
+              <text x="70" y="165" text-anchor="middle" font-size="11" fill="#7f1d1d">ForwardAuth</text>
+              <rect x="10" y="200" width="120" height="40" rx="8" fill="#fef2f2" stroke="#fca5a5"/>
+              <text x="70" y="225" text-anchor="middle" font-size="11" fill="#7f1d1d">Admin / tenant</text>
+              <path d="M140 40 H200" stroke="#94a3b8" marker-end="url(#a)"/>
+              <path d="M140 100 H200" stroke="#94a3b8"/>
+              <path d="M140 160 H200" stroke="#94a3b8"/>
+              <path d="M140 220 H200" stroke="#94a3b8"/>
+              <rect x="200" y="90" width="160" height="80" rx="10" fill="#fff7ed" stroke="#fdba74"/>
+              <text x="280" y="125" text-anchor="middle" font-size="12" fill="#9a3412">Implicit accept</text>
+              <text x="280" y="145" text-anchor="middle" font-size="11" fill="#c2410c">wrong family ignored</text>
+              <rect x="400" y="100" width="100" height="60" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+              <text x="450" y="135" text-anchor="middle" font-size="12" fill="#334155">Handler</text>
+            </svg>
+          </div>
+          <p class="diagram-caption">Each door had its own middleware. A key on a session route was ignored, not refused.</p>
+        </div>
+      </div>
+      <div class="panel after">
+        <div class="bar">After (ADR-0118 / #422)</div>
+        <div class="body">
+          <div class="diagram">
+            <svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="After: one CombinationID resolve">
+              <rect x="10" y="110" width="100" height="50" rx="8" fill="#e6f4f4" stroke="#0d7377"/>
+              <text x="60" y="140" text-anchor="middle" font-size="11" fill="#0d7377">Request</text>
+              <rect x="140" y="100" width="130" height="70" rx="10" fill="#ecfdf5" stroke="#047857"/>
+              <text x="205" y="130" text-anchor="middle" font-size="12" fill="#047857" font-weight="600">Resolve</text>
+              <text x="205" y="148" text-anchor="middle" font-size="10" fill="#065f46">CombinationID</text>
+              <rect x="300" y="40" width="100" height="44" rx="8" fill="#fef2f2" stroke="#fca5a5"/>
+              <text x="350" y="67" text-anchor="middle" font-size="11" fill="#991b1b">401 deny</text>
+              <rect x="300" y="110" width="100" height="50" rx="8" fill="#e6f4f4" stroke="#0d7377"/>
+              <text x="350" y="140" text-anchor="middle" font-size="11" fill="#0d7377">Route Access</text>
+              <rect x="420" y="100" width="90" height="70" rx="10" fill="#ecfdf5" stroke="#047857"/>
+              <text x="465" y="130" text-anchor="middle" font-size="11" fill="#047857">Guard</text>
+              <text x="465" y="148" text-anchor="middle" font-size="10" fill="#065f46">+ reach</text>
+              <text x="205" y="220" text-anchor="middle" font-size="11" fill="#5a6578">Adapters mint Principal only after resolve</text>
+              <text x="205" y="240" text-anchor="middle" font-size="11" fill="#5a6578">Registry never creates a Principal (REG-01)</text>
+            </svg>
+          </div>
+          <p class="diagram-caption">Order fixed: resolve (401) → route lists combination (401) → guard (403) → reach (404).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="examples">
+    <h2>Interactive examples</h2>
+    <p class="section-lead">What a resolved combination looks like for the two main Module 2 stories.</p>
+    <div class="filters" id="example-filters">
+      <button class="active" data-ex="portal">Portal → BFF → Core</button>
+      <button data-ex="edge">Public edge / ForwardAuth</button>
+      <button data-ex="partner">Partner integration key (2b)</button>
+    </div>
+    <div data-ex-panel="portal">
+      <div class="compare">
+        <div class="panel before"><div class="bar">Inputs the BFF sends</div><div class="body"><pre>delegate key
+X-Narya-Session  (from cookie)
+X-Narya-CSRF     (validated)
+X-Narya-Tenant   (from path)
+— no X-Narya-Edge
+— no copied browser headers (#421)</pre></div></div>
+        <div class="panel after"><div class="bar">Core resolves</div><div class="body"><pre>CombinationID:
+  BFFSessionDelegateTenant
+then CSRF vs session.State (REG-27
+  still authoritative on Core — open)
+then Guard = Capability from route row
+then reach → handler</pre></div></div>
+      </div>
+    </div>
+    <div data-ex-panel="edge" class="hidden">
+      <div class="compare">
+        <div class="panel before"><div class="bar">Traefik public Core route</div><div class="body"><pre>overwrite X-Narya-Edge: public
+strip client Session / Tenant /
+  Person-ID / Account-ID / Edge
+ForwardAuth: Cookie only in,
+  no response headers out
+  (TMS-244 / REG-04, REG-28)</pre></div></div>
+        <div class="panel after"><div class="bar">Core edge read (REG-35)</div><div class="body"><pre>exactly one "public" → public set
+missing header → in-cluster set
+duplicate / malformed → 401
+  problem+json
+NetworkPolicy default-deny
+  (TMS-250 / REG-32)</pre></div></div>
+      </div>
+    </div>
+    <div data-ex-panel="partner" class="hidden">
+      <div class="compare">
+        <div class="panel before"><div class="bar">Today</div><div class="body"><pre>Reserved CombinationID:
+  Integration
+nik_ format classified (REG-16)
+  but refused until 2b activates it
+No integration_keys table
+No /api/v1/integration/* routes</pre></div></div>
+        <div class="panel after"><div class="bar">Target (2b / IKY)</div><div class="body"><pre>Bearer nik_&lt;prefix&gt;_&lt;secret&gt;
+→ CombinationID Integration
+→ allowed only on integration prefix
+→ Access from key’s capacity/role/scope
+→ actor integration key:tenant/label
+UI-01 issues/lists/revokes keys</pre></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="drift">
+    <h2>Drift analysis — guide vs estate</h2>
+    <p class="section-lead">
+      Compared to vendored 03.02.06 and GitHub/infra evidence. “Aligned” means the rule’s
+      foundation is on main; partial means started; open means not evidenced.
+    </p>
+    <div class="filters" id="drift-filters">
+      <button class="active" data-drift="all">All</button>
+      <button data-drift="aligned">Aligned</button>
+      <button data-drift="partial">Partial</button>
+      <button data-drift="open">Still open</button>
+      <button data-drift="doc">Doc / process</button>
+    </div>
+    <table id="drift-table">
+      <thead><tr><th>ID</th><th>Topic</th><th>Guide says</th><th>Estate today</th><th>Class</th></tr></thead>
+      <tbody>
+        <tr data-drift="aligned"><td>D1</td><td>Registry Resolve</td><td>REG-01…06 one CombinationID</td><td>#422 <code>identity/registry</code> + 1620-cell walk</td><td><span class="badge done">Aligned</span></td></tr>
+        <tr data-drift="aligned"><td>D2</td><td>Token format fences</td><td>REG-16/18</td><td>#422 ClassifyShape refuses nik_/dvc_/JWT early</td><td><span class="badge done">Aligned</span></td></tr>
+        <tr data-drift="aligned"><td>D3</td><td>BFF builds from scratch</td><td>REG-11</td><td>#421 TMS-240</td><td><span class="badge done">Aligned</span></td></tr>
+        <tr data-drift="aligned"><td>D4</td><td>NetworkPolicy</td><td>REG-32</td><td>infra #154 TMS-250</td><td><span class="badge done">Aligned</span></td></tr>
+        <tr data-drift="aligned"><td>D5</td><td>Telemetry redaction</td><td>REG-30a</td><td>infra #156 TMS-252</td><td><span class="badge done">Aligned</span></td></tr>
+        <tr data-drift="partial"><td>D6</td><td>Ingress strips / ForwardAuth</td><td>REG-04, 28, 42</td><td>#152/#158 landed; full REG-42 checklist not proven green end-to-end here</td><td><span class="badge partial">Partial</span></td></tr>
+        <tr data-drift="partial"><td>D7</td><td>OpenAPI x-narya-*</td><td>REG-24</td><td>Route table exists; combination annotations not fully audited in this pass</td><td><span class="badge partial">Partial</span></td></tr>
+        <tr data-drift="open"><td>D8</td><td>Golden matrix</td><td>REG-23 / TMS-237</td><td>No merged PR found</td><td><span class="badge open">Open</span></td></tr>
+        <tr data-drift="open"><td>D9</td><td>Core CSRF authority</td><td>REG-27 / TMS-241</td><td>BFF layer exists; Core authoritative check not evidenced</td><td><span class="badge open">Open</span></td></tr>
+        <tr data-drift="open"><td>D10</td><td>Edge refuse + BFF delegate</td><td>REG-43 / 44</td><td>Not started (TMS-255/257)</td><td><span class="badge open">Open</span></td></tr>
+        <tr data-drift="open"><td>D11</td><td>Integration keys</td><td>IKY-01…21</td><td>Reserved CombinationID only</td><td><span class="badge open">Open</span></td></tr>
+        <tr data-drift="open"><td>D12</td><td>Operator UI</td><td>UI-01</td><td>Not started</td><td><span class="badge open">Open</span></td></tr>
+        <tr data-drift="doc"><td>D13</td><td>ADR-0118 status</td><td>Registry ADR binds REG-01…42</td><td>Still <strong>Proposed</strong> on tip (Accept when 2a closes)</td><td><span class="badge stale">Process</span></td></tr>
+        <tr data-drift="doc"><td>D14</td><td>Plane epic ledger</td><td>TMS-234 evidence comments</td><td>Live Plane not re-read this session; dump stale</td><td><span class="badge drift">Tracker lag</span></td></tr>
+        <tr data-drift="aligned"><td>D15</td><td>Requirements vendored</td><td>03.02.06 in repo index</td><td><code>module-2-credential-registry.md</code> + REG/IKY/UI rows approved</td><td><span class="badge done">Aligned</span></td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:16px">
+      <strong>Bottom line:</strong> Module 2a foundation is real on <code>main</code>, but the module is mid-flight.
+      Highest-leverage opens: <strong>REG-23 golden matrix</strong>, <strong>REG-27 Core CSRF</strong>, then
+      <strong>REG-43/44</strong>, then 2b/2c.
+    </div>
+  </section>
+
+  <section id="requirements">
+    <h2>Requirements REG / IKY / UI</h2>
+    <p class="section-lead">From vendored 03.02.06. Status is evidence-based, not Plane-authoritative.</p>
+    <div class="filters" id="req-filters">
+      <button class="active" data-req="all">All</button>
+      <button data-req="REG">REG (2a)</button>
+      <button data-req="IKY">IKY (2b)</button>
+      <button data-req="UI">UI (2c)</button>
+      <button data-req="done">Done</button>
+      <button data-req="partial">Partial</button>
+      <button data-req="open">Open</button>
+    </div>
+    <div id="req-list"></div>
+  </section>
+
+  <section id="followups">
+    <h2>Follow-ups and next modules</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Still open (ordered)</h3>
+        <ul>
+          <li><strong>TMS-237 / REG-23</strong> — golden matrix (blocks confident parity claims)</li>
+          <li><strong>TMS-241 / REG-27</strong> — Core authoritative CSRF</li>
+          <li><strong>TMS-245</strong> — #420 sign-in rate limits (open PR)</li>
+          <li><strong>REG-43 / 44</strong> (+ TMS-255/257) — edge refuse + delegate on every BFF call</li>
+          <li><strong>Accept ADR-0118</strong> when 2a close criteria met</li>
+          <li><strong>2b IKY-01…21</strong> then <strong>UI-01</strong></li>
+          <li>Optional: live Plane re-read of TMS-234 children; office <code>make vendor-requirements</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Where Module 2 sits</h3>
+        <div class="diagram">
+          <svg viewBox="0 0 420 120" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="35" width="90" height="50" rx="10" fill="#0d7377"/>
+            <text x="55" y="65" text-anchor="middle" font-size="12" fill="#fff" font-weight="600">M1 ✓</text>
+            <text x="140" y="60" font-size="18" fill="#0d7377">→</text>
+            <rect x="160" y="35" width="90" height="50" rx="10" fill="#fff7ed" stroke="#b45309" stroke-width="2"/>
+            <text x="205" y="58" text-anchor="middle" font-size="12" fill="#b45309" font-weight="600">M2</text>
+            <text x="205" y="74" text-anchor="middle" font-size="10" fill="#b45309">in progress</text>
+            <text x="290" y="60" font-size="18" fill="#94a3b8">→</text>
+            <rect x="310" y="35" width="90" height="50" rx="10" fill="#fff" stroke="#94a3b8"/>
+            <text x="355" y="58" text-anchor="middle" font-size="12" fill="#64748b" font-weight="600">M3</text>
+            <text x="355" y="74" text-anchor="middle" font-size="10" fill="#64748b">ADR Proposed</text>
+          </svg>
+        </div>
+        <p style="font-size:14px;color:var(--muted);margin:0">
+          M3 (TMS-327) has ADR-0119…0124 Proposed (#478) but waits on Module 2’s registry/matrix
+          for assertion combinations (REG-16/09 amendments).
+        </p>
+      </div>
+    </div>
+
+    <div class="card prompt-card">
+      <div class="prompt-head">
+        <div>
+          <h3>Follow-up prompt — next Module 2 session</h3>
+          <p>Paste into a new agent session. Prefer live Plane. Do not claim Module 2 closed.</p>
+        </div>
+        <button type="button" class="copy" id="copy-followup-prompt">Copy prompt</button>
+      </div>
+      <pre id="followup-prompt">Continue Identity Module 2 from the progress report — do not reopen Module 1.
+
+Report: /home/ryan/projects/pma/reports/module2/identity-module-2-report.html
+Guide: docs/requirements/module-2-credential-registry.md (Outline 03.02.06)
+Tip at report time: 1f849f73. ADR-0118 is still Proposed.
+
+Priority order:
+1) Live Plane pass on TMS-234 children (236–260, 255, 257) — newest comment is the record. Update the HTML drift/completion rows if states disagree with GitHub inference.
+2) TMS-237 / REG-23 golden matrix — size and start, or explain the blocker.
+3) TMS-241 / REG-27 Core CSRF — confirm status and next PR.
+4) #420 (TMS-245) — merge or disposition.
+5) Only after matrix + CSRF foundations: REG-43/44 (TMS-255/257).
+6) Do not start IKY/UI (2b/2c) until 2a’s close criteria are clear.
+
+Deliverable: short status delta + HTML report update (As of + tip + any row flips). Ask before writing Plane/Outline or opening implementation PRs unless I say yolo.</pre>
+    </div>
+  </section>
+
+  <footer>
+    Updated 2026-09-26 10:30 (+08). Main tip <code>1f849f73</code>. Sources: GitHub PMA-Tech/backend-narya (#421, #422, #476),
+    infra-gitops (#148, #152, #154, #156, #158), vendored 03.02.06,
+    ADR-0118 Proposed, reports/module2a artifacts. Plane live read skipped (no MCP).
+    Module 2 in progress — not closed.
+  </footer>
+</div>
+<script>
+const REQS = [{"id": "REG-01", "fam": "REG", "g": "A", "title": "A scheme-keyed registry lives under `internal/platform/identity/`. It only dispatches...", "status": "done", "note": "#422 registry package"}, {"id": "REG-02", "fam": "REG", "g": "A", "title": "`Credential` and `Authenticator` take typed inputs built on `secret.Token`. There is ...", "status": "done", "note": ""}, {"id": "REG-03", "fam": "REG", "g": "A", "title": "The active combinations are exactly those in section 4, taken from real senders. Anyt...", "status": "done", "note": "#422 Resolve + 1620-cell walk"}, {"id": "REG-04", "fam": "REG", "g": "A", "title": "`ForwardAuthCookie` is a gate only: 2xx or 401, no business authorization. Traefik se...", "status": "partial", "note": ""}, {"id": "REG-05", "fam": "REG", "g": "A", "title": "One closed `CombinationID` enum. The resolver's input is a closed, typed record whose...", "status": "done", "note": "#422 Evidence record"}, {"id": "REG-06", "fam": "REG", "g": "A", "title": "The combination is fixed before any adapter runs. Duplicate matches, unknown formats,...", "status": "done", "note": "#422 fixed before adapters"}, {"id": "REG-07", "fam": "REG", "g": "A", "title": "API keys are one scheme with two stores, consulted in a fixed order: format, static-k...", "status": "partial", "note": ""}, {"id": "REG-08", "fam": "REG", "g": "A", "title": "Collision guards. At boot, Core refuses a static key that appears in more than one se...", "status": "partial", "note": ""}, {"id": "REG-09", "fam": "REG", "g": "A", "title": "Every combination is active, reserved or removed. Reserved ones are visible to the co...", "status": "done", "note": "#422 active/reserved/removed"}, {"id": "REG-10", "fam": "REG", "g": "A", "title": "Contract ownership. `internal/platform/upstream` holds names and serialization only; ...", "status": "partial", "note": ""}, {"id": "REG-11", "fam": "REG", "g": "A", "title": "Core treats the BFF and dms-gateway as trusted in-cluster consumers. The BFF builds e...", "status": "done", "note": "#421 BFF request integrity"}, {"id": "REG-12", "fam": "REG", "g": "A", "title": "`X-Narya-Session` and `X-Narya-CSRF` are bearer credentials. The BFF and Core redact ...", "status": "partial", "note": ""}, {"id": "REG-13", "fam": "REG", "g": "A", "title": "Every outbound request from the BFF and dms-gateway matches exactly one active combin...", "status": "partial", "note": ""}, {"id": "REG-14", "fam": "REG", "g": "A", "title": "`DMSDelegateTenant` is confined to the Core routes dms-gateway calls. A delegate key ...", "status": "done", "note": "Pinned RequireAdmin refusal"}, {"id": "REG-15", "fam": "REG", "g": "A", "title": "REG-44 later requires the delegate key on every BFF call, which removes `BFFSessionTe...", "status": "open", "note": "Unblocked only after REG-44"}, {"id": "REG-16", "fam": "REG", "g": "B", "title": "Every scheme has a strict token format. Integration keys match `^nik_[0-9a-f]{8}_[A-Z...", "status": "done", "note": "#422 ClassifyShape nik_/dvc_/JWT"}, {"id": "REG-17", "fam": "REG", "g": "B", "title": "`nik_` and `dvc_` are reserved. A newly minted tenant key that lands in a reserved fo...", "status": "partial", "note": ""}, {"id": "REG-18", "fam": "REG", "g": "B", "title": "The token formats are disjoint. A `dvc_` token never resolves on a Core route.", "status": "done", "note": "#422 dvc_ refused on Core"}, {"id": "REG-19", "fam": "REG", "g": "B", "title": "Reserved prefixes `nka_` and `nkd_` for static keys are deferred to TMS-224 or key co...", "status": "open", "note": "Deferred to TMS-224 / key convergence"}, {"id": "REG-20", "fam": "REG", "g": "C", "title": "Every route-table entry is `{Method, Path, Access, Guard}`, read by both mounting and...", "status": "done", "note": "Route table (TMS-140/#446) + Access"}, {"id": "REG-21", "fam": "REG", "g": "C", "title": "New combinations are denied by default on every route. {kind, channel} labels come fr...", "status": "done", "note": ""}, {"id": "REG-22", "fam": "REG", "g": "C", "title": "`Guard` is one of `Capability(c)`, `LegacyAdminKey` or `LegacyTenantKey`. Each legacy...", "status": "done", "note": "Capability / Legacy* guards"}, {"id": "REG-23", "fam": "REG", "g": "C", "title": "A golden matrix maps route \u00d7 `CombinationID` \u00d7 edge state \u2192 status and body, with kin...", "status": "open", "note": "Golden matrix \u2014 TMS-237 still open"}, {"id": "REG-24", "fam": "REG", "g": "C", "title": "`openapi.yaml` stays the contract (edit, then `make generate`). Each operation carrie...", "status": "partial", "note": ""}, {"id": "REG-25", "fam": "REG", "g": "C", "title": "Existing checks stay: capability before decoding (ADR-0038); boundary then capability...", "status": "done", "note": ""}, {"id": "REG-26", "fam": "REG", "g": "C", "title": "`parity` rows keep today's refusal bytes exactly. Unifying refusals to 401/403/404 is...", "status": "partial", "note": ""}, {"id": "REG-27", "fam": "REG", "g": "D", "title": "Core makes the authoritative CSRF check: `X-Narya-CSRF` against the session's state o...", "status": "open", "note": "Core CSRF \u2014 TMS-241 open"}, {"id": "REG-28", "fam": "REG", "g": "E", "title": "Ingress header handling. Core routes overwrite `X-Narya-Edge: public`. BFF routes str...", "status": "partial", "note": ""}, {"id": "REG-29", "fam": "REG", "g": "E", "title": "NetBird reaches core-api only through Traefik, on a NetBird-only entrypoint carrying ...", "status": "done", "note": "infra-gitops #148 NetBird via Traefik"}, {"id": "REG-30", "fam": "REG", "g": "E", "title": "Release-blocking ingress checks. **infra-gitops** fails when: a Core route lacks the ...", "status": "partial", "note": ""}, {"id": "REG-30a", "fam": "REG", "g": "E", "title": "Infrastructure telemetry redacts `Cookie`, `Authorization`, `X-Narya-Session` and `X-...", "status": "done", "note": "infra-gitops #156 redaction canary"}, {"id": "REG-31", "fam": "REG", "g": "E", "title": "The deploy workflow makes the image-bump commit in infra-gitops only on top of infra-...", "status": "open", "note": ""}, {"id": "REG-32", "fam": "REG", "g": "E", "title": "Core-api gets default-deny ingress NetworkPolicy. Allowed sources: Traefik (ingress a...", "status": "done", "note": "infra-gitops #154 default-deny"}, {"id": "REG-33", "fam": "REG", "g": "E", "title": "Alerts use only what Core observes: route, `CombinationID`, edge state and key author...", "status": "open", "note": ""}, {"id": "REG-34", "fam": "REG", "g": "E", "title": "mTLS or workload identity for in-cluster callers and NetBird is a dated security-hard...", "status": "partial", "note": "TMS-258 decision/plan recorded; enforce later"}, {"id": "REG-35", "fam": "REG", "g": "E", "title": "How Core reads the edge marker: exactly one `public` value allows only combinations p...", "status": "done", "note": "#422 edge-marker table"}, {"id": "REG-36", "fam": "REG", "g": "E", "title": "Edge tests: on a Core route, a missing, empty, duplicated or case-varied header \u2192 Cor...", "status": "partial", "note": ""}, {"id": "REG-37", "fam": "REG", "g": "E", "title": "Public-edge policy by stage (table below). End state: the public route to core-api se...", "status": "open", "note": ""}, {"id": "REG-38", "fam": "REG", "g": "E", "title": "A caller search covers tenant keys and NetBird users of Core, with a signed result by...", "status": "partial", "note": "TMS-254 caller-search decision recorded"}, {"id": "REG-39", "fam": "REG", "g": "F", "title": "No runtime flag and no route mounted twice. Each slice moves a group of routes.", "status": "partial", "note": ""}, {"id": "REG-40", "fam": "REG", "g": "F", "title": "Rollback runs per layer, in the reverse of REG-10's order: revert the app PR, then th...", "status": "open", "note": ""}, {"id": "REG-41", "fam": "REG", "g": "F", "title": "The last 2a slice adds a build check that fails on any route mounted outside the table.", "status": "open", "note": ""}, {"id": "REG-42", "fam": "REG", "g": "G", "title": "Ingress fixes, in infra-gitops unless noted: ForwardAuth allow-lists (Cookie in, noth...", "status": "partial", "note": ""}, {"id": "REG-43", "fam": "REG", "g": "G", "title": "Edge refusal: session headers and admin keys are refused at the public edge. It carri...", "status": "open", "note": "Edge refuse session/admin \u2014 not started"}, {"id": "REG-44", "fam": "REG", "g": "G", "title": "After REG-43, the BFF's generated org-unit, access and auth clients send the delegate...", "status": "open", "note": "Delegate on every BFF call \u2014 not started"}, {"id": "REG-45", "fam": "REG", "g": "H", "title": "Every behaviour change carries its authority and its proof, as listed below. Anything...", "status": "partial", "note": ""}, {"id": "IKY-01", "fam": "IKY", "g": "IKY", "title": "New table `integration_keys`: `id`, `prefix`, `token_hash`, `tenant_id`, `capacity`, ...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-02", "fam": "IKY", "g": "IKY", "title": "`created_at` and `expires_at` are `timestamptz NOT NULL` in UTC; `created_at` default...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-03", "fam": "IKY", "g": "IKY", "title": "Anchor integrity. A nullness CASE CHECK identical to `accounts_scope_axis` (the tenan...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-04", "fam": "IKY", "g": "IKY", "title": "The anchor type must match the capacity, checked at issuance and again in Derive. Tra...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-05", "fam": "IKY", "g": "IKY", "title": "`last_used_at`: Derive returns it and, when it is older than an hour, does a bounded,...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-06", "fam": "IKY", "g": "IKY", "title": "Key format `nik_<prefix>_<secret>`, with 32 random bytes. Only the SHA-256 hash is st...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-07", "fam": "IKY", "g": "IKY", "title": "An integration key is one new sealed Principal variant (`identity.Match` gains a para...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-08", "fam": "IKY", "g": "IKY", "title": "The `identity/integration` adapter joins the allow-list of packages that may create a...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-09", "fam": "IKY", "g": "IKY", "title": "Actor kind `integration`, label `key:<tenant>/<label>` (a new constant, no migration)...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-10", "fam": "IKY", "g": "IKY", "title": "Only Platform Administrators issue keys. The key's capacity, role and scope must be a...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-11", "fam": "IKY", "g": "IKY", "title": "Access is derived in one SQL statement per request. The key is refused if it is revok...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-12", "fam": "IKY", "g": "IKY", "title": "Integration routes live on a dedicated public prefix (for example `/api/v1/integratio...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-13", "fam": "IKY", "g": "IKY", "title": "Every integration route refuses session, delegate, admin, tenant and device credentials.", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-14", "fam": "IKY", "g": "IKY", "title": "v1 is read-only: `device:read`, `transaction:read` and `catalogue:read`. Each route o...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-15", "fam": "IKY", "g": "IKY", "title": "Rate limiting is mandatory. At the edge: by source IP plus a global cap (the abuse bo...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-16", "fam": "IKY", "g": "IKY", "title": "Platform-plane operator routes to issue, list, rotate and revoke keys, gated by a new...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-17", "fam": "IKY", "g": "IKY", "title": "Lists use the repo's pagination pattern and show keys masked by prefix.", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-18", "fam": "IKY", "g": "IKY", "title": "Revocation is idempotent: an already-revoked key gets the same success response, and ...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-19", "fam": "IKY", "g": "IKY", "title": "Rotation never revokes the old key automatically. Expiry and explicit revocation alwa...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-20", "fam": "IKY", "g": "IKY", "title": "Converging tenant keys onto integration keys is planned under its own ADR, which also...", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "IKY-21", "fam": "IKY", "g": "IKY", "title": "Contract-first: edit `openapi.yaml`, then `make generate`.", "status": "open", "note": "Module 2b \u2014 not started"}, {"id": "UI-01", "fam": "UI", "g": "UI", "title": "Platform screen to issue, list and revoke integration keys", "status": "open", "note": "Module 2c \u2014 not started"}];
+const list = document.getElementById("req-list");
+function badge(st) {
+  if (st==="done") return '<span class="badge done">Done</span>';
+  if (st==="partial") return '<span class="badge partial">Partial</span>';
+  return '<span class="badge open">Open</span>';
+}
+function renderReq(filter) {
+  list.innerHTML = "";
+  REQS.filter(o => {
+    if (filter==="all") return true;
+    if (filter==="done"||filter==="partial"||filter==="open") return o.status===filter;
+    return o.fam===filter;
+  }).forEach(o => {
+    const d=document.createElement("details");
+    d.className="req";
+    d.innerHTML = `<summary><code>${o.id}</code><span>${o.title}</span>${badge(o.status)}</summary>
+      <div class="body">${o.note ? o.note+" · " : ""}Family ${o.fam}. See ADR-0118 / Outline 03.02.06.</div>`;
+    list.appendChild(d);
+  });
+}
+renderReq("all");
+document.querySelectorAll("#req-filters button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#req-filters button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    renderReq(btn.dataset.req);
+  });
+});
+document.querySelectorAll("#example-filters button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#example-filters button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll("[data-ex-panel]").forEach(p => {
+      p.classList.toggle("hidden", p.dataset.exPanel !== btn.dataset.ex);
+    });
+  });
+});
+document.querySelectorAll("#drift-filters button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#drift-filters button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const f=btn.dataset.drift;
+    document.querySelectorAll("#drift-table tbody tr").forEach(tr => {
+      tr.classList.toggle("hidden", f!=="all" && tr.dataset.drift!==f);
+    });
+  });
+});
+document.querySelectorAll("#toc button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#toc button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.target).scrollIntoView({behavior:"smooth"});
+  });
+});
+const sections=["verdict","completion","architecture","examples","drift","requirements","followups"];
+const tocBtns=[...document.querySelectorAll("#toc button")];
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    tocBtns.forEach(b=>b.classList.toggle("active", b.dataset.target===e.target.id));
+  });
+}, {rootMargin:"-30% 0px -60% 0px", threshold:0});
+sections.forEach(id=>io.observe(document.getElementById(id)));
+const copyBtn=document.getElementById("copy-followup-prompt");
+const promptEl=document.getElementById("followup-prompt");
+if(copyBtn&&promptEl){
+  copyBtn.addEventListener("click", async ()=>{
+    try { await navigator.clipboard.writeText(promptEl.textContent); }
+    catch {
+      const range=document.createRange(); range.selectNodeContents(promptEl);
+      const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      document.execCommand("copy"); sel.removeAllRanges();
+    }
+    copyBtn.classList.add("copied"); copyBtn.textContent="Copied";
+    setTimeout(()=>{ copyBtn.classList.remove("copied"); copyBtn.textContent="Copy prompt"; },1600);
+  });
+}
+</script>
+</body>
+</html>
