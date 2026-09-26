@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { StatusMessage } from './components/StatusMessage'
 import { CatalogPage } from './pages/CatalogPage'
 import { ViewerPage } from './pages/ViewerPage'
@@ -15,6 +15,18 @@ export function App() {
   // Owned here (not in CatalogPage) so filters and sort survive a round-trip through the viewer.
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [sort, setSort] = useState<SortKey>('updated')
+  // Owned here (not in CatalogPage) so it survives CatalogPage unmounting while the viewer is open.
+  // Kept fresh continuously while on the catalog, so it's up to date whenever a card is opened.
+  const catalogScrollRef = useRef(0)
+
+  useEffect(() => {
+    if (route.view !== 'catalog') return
+    const onScroll = () => {
+      catalogScrollRef.current = window.scrollY
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [route.view])
 
   const artifact =
     route.view === 'artifact' && catalog.status === 'ready'
@@ -34,6 +46,7 @@ export function App() {
         onFiltersChange={setFilters}
         sort={sort}
         onSortChange={setSort}
+        scrollRestoreRef={catalogScrollRef}
       />
     )
   }

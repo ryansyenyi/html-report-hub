@@ -21,7 +21,9 @@ interface ViewerPageProps {
 export function ViewerPage({ id, artifact }: ViewerPageProps) {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') window.location.hash = CATALOG_HREF
+      // location.replace (not setting location.hash) so it doesn't push a history entry —
+      // Back after Esc goes to whatever was before the viewer, not back into the viewer.
+      if (event.key === 'Escape') window.location.replace(CATALOG_HREF)
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)

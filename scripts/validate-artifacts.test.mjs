@@ -178,4 +178,40 @@ describe('validateCatalog', () => {
     expect(result.errors).toEqual([])
     expect(result.warnings.some((w) => w.includes('artifacts/orphan.html'))).toBe(true)
   })
+
+  it('errors on duplicate tags compared case-insensitively', () => {
+    const result = validateCatalog({ artifacts: [baseEntry({ tags: ['iam', 'IAM'] })] }, tmpDir)
+    expect(result.errors.some((e) => e.includes('duplicate tag'))).toBe(true)
+  })
+
+  it('allows tags that are merely similar, not duplicates', () => {
+    const result = validateCatalog({ artifacts: [baseEntry({ tags: ['iam', 'iam-audit'] })] }, tmpDir)
+    expect(result.errors).toEqual([])
+  })
+
+  describe('path safety pattern', () => {
+    // Same cases as src/utils/catalog.test.ts's "path safety pattern" describe block.
+    const cases = [
+      { path: 'artifacts/narya/security/permission-audit.html', valid: true },
+      { path: 'artifacts/a#b.html', valid: false },
+      { path: 'artifacts/a b.html', valid: false },
+      { path: 'artifacts/a%20b.html', valid: false },
+      { path: '\\\\evil.com/x.html', valid: false },
+      { path: '\t/evil.com/x.html', valid: false },
+      { path: 'javascript:alert(1)', valid: false },
+      { path: 'artifacts/../x.html', valid: false },
+      { path: 'artifacts//x.html', valid: false },
+      { path: 'artifacts/x.htm', valid: false },
+    ]
+
+    it.each(cases)('path $path is valid: $valid', ({ path: entryPath, valid }) => {
+      if (valid) writeArtifactFile(entryPath)
+      const result = validateCatalog({ artifacts: [baseEntry({ path: entryPath })] }, tmpDir)
+      if (valid) {
+        expect(result.errors).toEqual([])
+      } else {
+        expect(result.errors.some((e) => e.includes('invalid "path"'))).toBe(true)
+      }
+    })
+  })
 })

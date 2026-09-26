@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ArtifactCard } from '../components/ArtifactCard'
 import { Sidebar } from '../components/Sidebar'
 import { StatusMessage } from '../components/StatusMessage'
@@ -14,6 +14,8 @@ interface CatalogPageProps {
   onFiltersChange: (filters: Filters) => void
   sort: SortKey
   onSortChange: (sort: SortKey) => void
+  /** Last scroll position of the catalog, kept fresh by App across the round-trip through the viewer. */
+  scrollRestoreRef: { current: number }
 }
 
 const SIDEBAR_ID = 'catalog-filters'
@@ -35,8 +37,17 @@ export function CatalogPage({
   onFiltersChange,
   sort,
   onSortChange,
+  scrollRestoreRef,
 }: CatalogPageProps) {
   const searchRef = useRef<HTMLInputElement>(null)
+
+  // Restore the catalog's previous scroll position once, right after mount (cards render
+  // synchronously in the same commit whenever the catalog is already loaded, which is always
+  // the case on a return trip from the viewer). Before paint, so there's no visible jump.
+  // On first load scrollRestoreRef.current is still 0, so this is a no-op and stays at top.
+  useLayoutEffect(() => {
+    window.scrollTo(0, scrollRestoreRef.current)
+  }, [scrollRestoreRef])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

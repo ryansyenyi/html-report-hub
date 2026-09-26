@@ -60,7 +60,12 @@ npm run preview   # serve the production build locally
      `updatedAt` must not be before `createdAt`.
    - `path` must start with `artifacts/`, end with `.html`, contain no `..`
      or backslashes, have no leading `/`, be unique across the catalog, and
-     point at a file that actually exists under `public/`.
+     point at a file that actually exists under `public/`. Beyond that, the
+     whole path may only contain letters, numbers, `.`, `_`, `-`, and `/` —
+     no spaces, `#`, `%`, `?`, or other non-ASCII/control characters, and no
+     `//`.
+   - `tags` must not contain the same tag twice, compared
+     case-insensitively (e.g. `["iam", "IAM"]` is rejected).
    - An HTML file under `public/artifacts/` with no matching `path` entry in
      the catalog produces a warning (not a build failure) — it's orphaned
      and won't show up anywhere.
@@ -149,3 +154,6 @@ MCP-based) must satisfy the same contract this repo enforces by hand:
   client-side string/array matching over the fields already in the catalog.
 - Keyboard shortcuts: `/` focuses the search box from the catalog view, and
   `Esc` leaves the viewer back to the catalog.
+- The tag list in the sidebar renders every distinct tag with no cap or
+  collapsing — with hundreds of distinct tags across the catalog, that list
+  gets long.

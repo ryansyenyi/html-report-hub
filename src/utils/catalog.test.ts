@@ -68,6 +68,37 @@ describe('parseCatalog', () => {
     const result = parseCatalog({ artifacts: [entry] })
     expect(result).toEqual([entry])
   })
+
+  describe('path safety pattern', () => {
+    // Same cases as scripts/validate-artifacts.test.mjs's "path safety pattern" describe block.
+    const cases = [
+      { path: 'artifacts/narya/security/permission-audit.html', valid: true },
+      { path: 'artifacts/a#b.html', valid: false },
+      { path: 'artifacts/a b.html', valid: false },
+      { path: 'artifacts/a%20b.html', valid: false },
+      { path: '\\\\evil.com/x.html', valid: false },
+      { path: '\t/evil.com/x.html', valid: false },
+      { path: 'javascript:alert(1)', valid: false },
+      { path: 'artifacts/../x.html', valid: false },
+      { path: 'artifacts//x.html', valid: false },
+      { path: 'artifacts/x.htm', valid: false },
+    ]
+
+    it.each(cases)('path $path is valid: $valid', ({ path: entryPath, valid }) => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const entry = { ...validEntry, path: entryPath }
+      const result = parseCatalog({ artifacts: [entry] })
+      if (valid) {
+        expect(result).toEqual([entry])
+        expect(warn).not.toHaveBeenCalled()
+      } else {
+        expect(result).toEqual([])
+        expect(warn).toHaveBeenCalledTimes(1)
+        expect(warn.mock.calls[0][0]).toContain('invalid "path"')
+      }
+      warn.mockRestore()
+    })
+  })
 })
 
 describe('artifactUrl', () => {

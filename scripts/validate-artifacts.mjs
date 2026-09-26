@@ -18,6 +18,9 @@ const REQUIRED_STRING_FIELDS = [
 
 const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
+// Path safety: a path must match this pattern AND contain no ".." segment and no "//".
+// Keep this regex literal identical to PATH_PATTERN in src/utils/catalog.ts.
+const PATH_PATTERN = /^artifacts\/[A-Za-z0-9._/-]+\.html$/
 
 function entryLabel(entry, index) {
   const id = typeof entry?.id === 'string' && entry.id.length > 0 ? entry.id : null
@@ -103,6 +106,16 @@ export function validateCatalog(data, publicDir) {
 
     if (!isStringArray(entry.tags)) {
       errors.push(`${label}: "tags" must be an array of strings`)
+    } else {
+      const seenTags = new Set()
+      for (const tag of entry.tags) {
+        const key = tag.toLowerCase()
+        if (seenTags.has(key)) {
+          errors.push(`${label}: duplicate tag "${tag}" (case-insensitive)`)
+        } else {
+          seenTags.add(key)
+        }
+      }
     }
 
     if (typeof entry.id === 'string' && entry.id.length > 0) {
@@ -135,9 +148,15 @@ export function validateCatalog(data, publicDir) {
       const pathIssues = []
       if (!entryPath.startsWith('artifacts/')) pathIssues.push('must start with "artifacts/"')
       if (entryPath.includes('..')) pathIssues.push('must not contain ".."')
+      if (entryPath.includes('//')) pathIssues.push('must not contain "//"')
       if (entryPath.includes('\\')) pathIssues.push('must not contain a backslash')
       if (entryPath.startsWith('/')) pathIssues.push('must not have a leading "/"')
       if (!entryPath.endsWith('.html')) pathIssues.push('must end with ".html"')
+      if (!PATH_PATTERN.test(entryPath)) {
+        pathIssues.push(
+          'must contain only letters, numbers, ".", "_", "-", and "/" (no spaces, "#", "%", "?", or other non-ASCII/control characters)',
+        )
+      }
 
       if (pathIssues.length > 0) {
         errors.push(`${label}: invalid "path" "${entryPath}" (${pathIssues.join('; ')})`)
