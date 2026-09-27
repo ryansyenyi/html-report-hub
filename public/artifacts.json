@@ -3,7 +3,7 @@
     {
       "id": "identity-module-1",
       "title": "Identity Module 1 — Completion & Drift Report",
-      "description": "Close-out for the Module 1 identity refactor (single sealed Principal): 26/26 requirements traced, TMS-291 done, follow-ups TMS-373–376 open, one open drift gap (D17).",
+      "description": "Close-out for the Module 1 identity refactor (single sealed Principal): 26/26 requirements traced, TMS-291 done, follow-ups TMS-373–376 open, one open drift gap (D17); staging smoke test 27 Sep found no Module 1 regression.",
       "project": "Narya",
       "category": "Progress",
       "tags": [
