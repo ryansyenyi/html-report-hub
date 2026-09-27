@@ -1155,35 +1155,6 @@ IsAdminKey := KeyID != "" && Tenant == ""
         </p>
       </div>
     </div>
-
-    <div class="card prompt-card">
-      <div class="prompt-head">
-        <div>
-          <h3>Follow-up prompt — TMS-373–376 (TMS-291 follow-ups)</h3>
-          <p>
-            Module 1 is closed and TMS-291 is merged. Paste this to pick up the four small
-            follow-ups. Do not reopen Module 1 hygiene unless live Plane/Outline evidence
-            contradicts this report.
-          </p>
-        </div>
-        <button type="button" class="copy" id="copy-followup-prompt">Copy prompt</button>
-      </div>
-      <pre id="followup-prompt">Module 1 (TMS-216) is fully closed — do not re-check its hygiene unless asked.
-
-Context report (D1–D14 aligned; D15–D16 intentional amendments; D17 open): /home/ryan/projects/pma/reports/module1/identity-module-1-report.html
-Module 1 tip for docs: 53cea365 (#473). TMS-291: 35174824 (#476). Current origin/main tip: ddd2d2b1 (2026-09-28).
-
-TMS-291 is Done (#476, httpx.CapabilityOf + authz.DecideRoute, ~117 sites in 17 packages; ADR-0114 §12). Its four follow-ups were filed under TMS-216 on 2026-09-26 and are all Backlog:
-
-- **TMS-373** — ban rbac.GrantedTo/GrantableAt at handler sites and resolve rbac import aliases in the conformance test (the remaining enforcement gap; drift D17).
-- **TMS-374** — collapse the 11 package-local refuseUnlessDecided copies into one authz helper.
-- **TMS-375** — tenant's decisionAwareStore test fake duplicates the repository's permission check.
-- **TMS-376** — dedicated no-gate 500 test for vendors.grantTenant.
-- Start from: each ticket's newest Plane comment (none yet beyond the body), TMS-291's 2026-09-26 "Done" comment and ADR-0114 §12 on main.
-- Deliverable: size the four, confirm the surface on current main, and either implement or produce a short plan with anchors. Ask before writing to Plane.
-
-Optional non-blocking hygiene (not a ticket): from the office network, run `make vendor-requirements` so `docs/requirements/identity-module-1.md`’s header matches the standard script line (today it notes MCP connector provenance).</pre>
-    </div>
   </section>
 
   <footer>
