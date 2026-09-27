@@ -358,16 +358,17 @@
       <em>03.02.05 · Identity Module 1 — One Principal</em>.
       S0–S5, residue #457–#462, ADR accept (#472), and requirements vendoring (#473) are on
       <code>origin/main</code>. Plane, Outline and Notion were brought current on 25 Sep.
-      Module 1 drift is closed; the next ticket is TMS-291 (Module 2).
+      TMS-291 merged on 26 Sep (#476); four small TMS-291 follow-ups (TMS-373–376) sit in
+      Backlog under TMS-216. Later modules have since amended ADR-0114/0117 on purpose.
     </p>
     <div class="meta-row">
-      <span class="pill good"><strong>Code</strong> S0–S5 + #457–#462</span>
+      <span class="pill good"><strong>Code</strong> S0–S5 + #457–#462 + #476</span>
       <span class="pill good"><strong>ADRs</strong> 0113 / 0114 / 0117 Accepted</span>
       <span class="pill good"><strong>TMS-216</strong> closed</span>
       <span class="pill good"><strong>Docs</strong> Outline / Notion / #473</span>
-      <span class="pill warn"><strong>Next</strong> TMS-291</span>
-      <span class="pill"><strong>As of</strong> 2026-09-25 · 23:59</span>
-      <span class="pill"><strong>Main tip</strong> 91903511</span>
+      <span class="pill warn"><strong>Open</strong> TMS-373–376</span>
+      <span class="pill"><strong>As of</strong> 2026-09-28 · 01:31</span>
+      <span class="pill"><strong>Main tip</strong> ddd2d2b1</span>
     </div>
   </header>
 
@@ -395,7 +396,7 @@
       <div class="card">
         <div class="stat-label">GitHub slices + residue</div>
         <div class="stat" style="color:var(--good)">Done</div>
-        <div>S0→S5 + #457–#462 + #473 on main</div>
+        <div>S0→S5 + #457–#462 + #473 + #476 on main</div>
       </div>
       <div class="card">
         <div class="stat-label">ONP requirements traced</div>
@@ -405,14 +406,15 @@
       <div class="card">
         <div class="stat-label">Module close</div>
         <div class="stat" style="color:var(--good)">Closed</div>
-        <div>Plane / Outline / Notion current; D1–D14 aligned</div>
+        <div>D1–D14 aligned; 4 hygiene follow-ups in Backlog</div>
       </div>
     </div>
 
     <div class="callout" style="margin-top:18px">
-      <strong>Source note.</strong> Authoritative close: GitHub tip <code>91903511</code> (Module 1 tip
-      <code>53cea365</code> = #473), ADR-0113/0114/0117 Accepted (#472), Plane TMS-216 newest comment
-      “Documentation close-out (2026-09-25)”, Outline 03.02.05 <strong>rev 11</strong> Complete with §8
+      <strong>Source note.</strong> Authoritative close: GitHub tip <code>ddd2d2b1</code> on 28 Sep (Module 1 tip
+      <code>53cea365</code> = #473; TMS-291 = #476, <code>35174824</code>), ADR-0113/0114/0117 Accepted (#472), Plane TMS-216
+      “Documentation close-out (2026-09-25)” — superseded as newest comment on 26 Sep by Module 3’s
+      cross-module amendments note (delegation chain, ADR-0119) — Outline 03.02.05 <strong>rev 11</strong> Complete with §8
       6/6, Notion Narya + Daily Tracker updated. The morning
       <code>m3-grill/facts-plane.md</code> dump is stale. Outline HTTP from this network may still 403;
       the repo now holds the guide at <code>docs/requirements/identity-module-1.md</code>.
@@ -425,7 +427,8 @@
     <p class="section-lead">
       Plane’s newest comment is the ticket record. GitHub squash merges are the code record.
       As of the 25 Sep documentation close-out on TMS-216 plus #473, Module 1 is closed on
-      Plane, GitHub, Outline and Notion.
+      Plane, GitHub, Outline and Notion. TMS-291 followed on 26 Sep (#476) and left four
+      follow-ups, TMS-373–376, filed under TMS-216 in Backlog.
     </p>
 
     <div class="grid-2">
@@ -449,6 +452,11 @@
             <tr><td><code>TMS-231</code></td><td><span class="badge done">Done</span></td><td>#460 — dms/BFF refuse static tenant key (ADR-0037)</td></tr>
             <tr><td><code>TMS-286/287</code></td><td><span class="badge done">Done</span></td><td>#461 — last <code>httpx</code> legacy accessors deleted</td></tr>
             <tr><td><code>TMS-288</code></td><td><span class="badge done">Done</span></td><td>#462 — target-naming reads consult the row’s capability</td></tr>
+            <tr><td><code>TMS-291</code></td><td><span class="badge done">Done</span></td><td>#476 (26 Sep) — portal handlers decide from the row’s capability via <code>httpx.CapabilityOf</code>; ~117 sites in 17 packages, not ~27</td></tr>
+            <tr><td><code>TMS-373</code></td><td><span class="badge open">Backlog</span></td><td>TMS-291 FU — ban <code>rbac.GrantedTo</code>/<code>GrantableAt</code> at handler sites; resolve <code>rbac</code> import aliases in the conformance test</td></tr>
+            <tr><td><code>TMS-374</code></td><td><span class="badge open">Backlog</span></td><td>TMS-291 FU — collapse the 11 <code>refuseUnlessDecided</code> copies into one <code>authz</code> helper</td></tr>
+            <tr><td><code>TMS-375</code></td><td><span class="badge open">Backlog</span></td><td>TMS-291 FU — <code>tenant</code> test fake <code>decisionAwareStore</code> duplicates the repository’s permission check</td></tr>
+            <tr><td><code>TMS-376</code></td><td><span class="badge open">Backlog</span></td><td>TMS-291 FU — dedicated no-gate 500 test for <code>vendors.grantTenant</code></td></tr>
           </tbody>
         </table>
       </div>
@@ -507,6 +515,10 @@
             <div class="when">2026-09-25 17:38</div>
             <div class="what"><a href="https://github.com/PMA-Tech/backend-narya/pull/473">#473</a> Vendor 03.02.05 into <code>docs/requirements/</code> (D5 closed)</div>
           </div>
+          <div class="tl-item">
+            <div class="when">2026-09-26 10:14</div>
+            <div class="what"><a href="https://github.com/PMA-Tech/backend-narya/pull/476">#476</a> TMS-291 — portal handlers decide from their row’s capability; ADR-0114 §12</div>
+          </div>
         </div>
       </div>
     </div>
@@ -527,6 +539,7 @@
         <tr><td>FU</td><td>#462</td><td>Target-naming reads consult declared capability (TMS-288)</td><td>21</td></tr>
         <tr><td>—</td><td>#472</td><td>Accept ADR-0113 / 0114 / 0117; close TMS-216</td><td>24–26</td></tr>
         <tr><td>Docs</td><td>#473</td><td>Vendor 03.02.05 + index row; ONP IDs resolve in-repo</td><td>index</td></tr>
+        <tr><td>FU</td><td>#476</td><td>One route-capability accessor; <code>authz.DecideRoute</code>; ADR-0114 §12 (TMS-291)</td><td>06, 22</td></tr>
       </tbody>
     </table>
   </section>
@@ -929,7 +942,8 @@ IsAdminKey := KeyID != "" && Tenant == ""
     <h2>Drift analysis — requirements guide vs estate</h2>
     <p class="section-lead">
       Compared to Outline 03.02.05 (rev 11, Complete) / Notion Narya page and Plane TMS-216
-      documentation close-out (25 Sep). Every drift row below is aligned or an intentional amendment.
+      documentation close-out (25 Sep), re-checked against <code>origin/main</code> <code>ddd2d2b1</code> on 28 Sep.
+      Every drift row below is aligned or an intentional amendment, except D17 (TMS-373, Backlog).
     </p>
 
     <div class="filters" id="drift-filters">
@@ -970,7 +984,7 @@ IsAdminKey := KeyID != "" && Tenant == ""
           <td>D4</td>
           <td>ADR status</td>
           <td>Guide: Module 1 ADR lands in S0</td>
-          <td>ADR-0113 / 0114 / 0117 <strong>Accepted</strong> 25 Sep (#472)</td>
+          <td>ADR-0113 / 0114 / 0117 <strong>Accepted</strong> 25 Sep (#472). Still Accepted on 28 Sep; since amended in place: ADR-0114 §12 (TMS-291, #476) and §13 (TMS-339, #527), ADR-0117 <code>AuthBaseRoute</code> split (TMS-332, #480)</td>
           <td><span class="badge done">Aligned</span></td>
         </tr>
         <tr data-drift="aligned">
@@ -1040,16 +1054,38 @@ IsAdminKey := KeyID != "" && Tenant == ""
           <td>D14</td>
           <td>Module 2 unblock</td>
           <td>2b waits for TMS-222 close</td>
-          <td>TMS-216/222 closed; Module 2 can proceed from the identity seam</td>
+          <td>TMS-216/222 closed; Module 2 building on the seam: ADR-0118 Accepted (#500, TMS-236 Done); TMS-234 (2a) and TMS-235 (2b) In Progress on Plane</td>
           <td><span class="badge done">Aligned</span></td>
+        </tr>
+        <tr data-drift="scope">
+          <td>D15</td>
+          <td>ONP-06 mint packages</td>
+          <td>Only <code>session</code>/<code>apikey</code>/<code>device</code> mint; new packages need review</td>
+          <td>Two more mint packages, each with its ONP-06 review: <code>identity/integration</code> (ADR-0129 §7; #510, TMS-263) and <code>identity/assertion</code> (ADR-0122 §7–8, ADR-0114 §13; #527, TMS-339)</td>
+          <td><span class="badge stale">Amended</span></td>
+        </tr>
+        <tr data-drift="scope">
+          <td>D16</td>
+          <td>ONP-04 <code>Via</code> persistence</td>
+          <td><code>Via</code> logged as fingerprint, not persisted (ADR-0114 §7)</td>
+          <td><code>Via</code> now also persisted as <code>audit_log.actor_via</code> (#525, TMS-336); ADR-0114 notes the amendment by ADR-0122 §2, which is still <em>Proposed</em>. <code>Via</code> still grants nothing</td>
+          <td><span class="badge stale">Amended</span></td>
+        </tr>
+        <tr data-drift="open">
+          <td>D17</td>
+          <td>Decision enforcement after TMS-291</td>
+          <td>Portal handlers decide only from their row’s capability (#476)</td>
+          <td><code>rbac.GrantedTo</code>/<code>GrantableAt</code> not yet banned at handler sites; conformance test only recognises the import name <code>rbac</code> (TMS-373, Backlog)</td>
+          <td><span class="badge open">Open</span></td>
         </tr>
       </tbody>
     </table>
 
     <div class="callout" style="margin-top:16px">
       <strong>Bottom line on drift:</strong> Module 1 code, ADR accept, and epic close are on
-      <code>main</code>. No drift remains: <code>03.02.05</code> was vendored into the repo index in #473 (D5). Banners,
-      §8 checkboxes and TMS-219 AC3 were closed on 25 Sep.
+      <code>main</code>. D1–D14 stay closed: <code>03.02.05</code> was vendored into the repo index in #473 (D5). Banners,
+      §8 checkboxes and TMS-219 AC3 were closed on 25 Sep. Since then Modules 2b and 3 amended
+      ONP-04 and ONP-06 on purpose (D15, D16), and one TMS-291 enforcement gap remains open (D17).
     </div>
   </section>
 
@@ -1083,6 +1119,11 @@ IsAdminKey := KeyID != "" && Tenant == ""
           <li><s>Refresh Notion / Outline 03.02.05 status callout and §8 checkboxes</s> done 25 Sep</li>
           <li><s>Vendor 03.02.05 into <code>docs/requirements/</code> + index row</s> #473 (<code>53cea365</code>)</li>
           <li><s>Record TMS-219 AC3 staging smoke</s> recorded 24–25 Sep (TMS-323)</li>
+          <li><s>TMS-291 route-capability accessor</s> #476 (<code>35174824</code>, 26 Sep)</li>
+          <li>TMS-373 — ban <code>rbac.GrantedTo</code>/<code>GrantableAt</code> at handler sites (Backlog)</li>
+          <li>TMS-374 — one <code>authz</code> helper for the 11 <code>refuseUnlessDecided</code> copies (Backlog)</li>
+          <li>TMS-375 — <code>decisionAwareStore</code> test fake duplicates the repo check (Backlog)</li>
+          <li>TMS-376 — no-gate 500 test for <code>vendors.grantTenant</code> (Backlog)</li>
         </ul>
         <p style="font-size:13px;color:var(--muted);margin:12px 0 0">
           Optional later: <code>make vendor-requirements</code> from the office network to
@@ -1098,7 +1139,7 @@ IsAdminKey := KeyID != "" && Tenant == ""
             <text x="140" y="60" font-size="18" fill="#0d7377">→</text>
             <rect x="160" y="35" width="90" height="50" rx="10" fill="#fff" stroke="#0d7377" stroke-width="2"/>
             <text x="205" y="58" text-anchor="middle" font-size="12" fill="#0d7377" font-weight="600">M2</text>
-            <text x="205" y="74" text-anchor="middle" font-size="10" fill="#0d7377">unblocked</text>
+            <text x="205" y="74" text-anchor="middle" font-size="10" fill="#0d7377">in progress</text>
             <text x="290" y="60" font-size="18" fill="#94a3b8">→</text>
             <rect x="310" y="35" width="90" height="50" rx="10" fill="#fff" stroke="#94a3b8"/>
             <text x="355" y="58" text-anchor="middle" font-size="12" fill="#64748b" font-weight="600">M3</text>
@@ -1106,9 +1147,11 @@ IsAdminKey := KeyID != "" && Tenant == ""
           </svg>
         </div>
         <p style="font-size:14px;color:var(--muted);margin:0">
-          Module 2 (TMS-234/235) plugs new credential kinds into the same Principal.
-          Next concrete ticket: <strong>TMS-291</strong> (route-table capability accessor;
-          unblocked by #422 / TMS-236 resolver). Module 3 moves sessions out of Core.
+          Module 2 (TMS-234/235, both In Progress) plugs new credential kinds into the same
+          Principal; integration keys now mint through <code>identity/integration</code>.
+          <strong>TMS-291</strong> is Done (#476, via <code>httpx.CapabilityOf</code>, not the TMS-236
+          resolver). Module 3 (TMS-327) moves sessions out of Core; its first slices are on main
+          (#478, #490, #525, #526, #527).
         </p>
       </div>
     </div>
@@ -1116,37 +1159,40 @@ IsAdminKey := KeyID != "" && Tenant == ""
     <div class="card prompt-card">
       <div class="prompt-head">
         <div>
-          <h3>Follow-up prompt — TMS-291 (only remaining)</h3>
+          <h3>Follow-up prompt — TMS-373–376 (TMS-291 follow-ups)</h3>
           <p>
-            Module 1 is closed. Paste this to start the next ticket. Do not reopen Module 1
-            hygiene unless live Plane/Outline evidence contradicts this report.
+            Module 1 is closed and TMS-291 is merged. Paste this to pick up the four small
+            follow-ups. Do not reopen Module 1 hygiene unless live Plane/Outline evidence
+            contradicts this report.
           </p>
         </div>
         <button type="button" class="copy" id="copy-followup-prompt">Copy prompt</button>
       </div>
       <pre id="followup-prompt">Module 1 (TMS-216) is fully closed — do not re-check its hygiene unless asked.
 
-Context report (all D1–D14 aligned): /home/ryan/projects/pma/reports/module1/identity-module-1-report.html
-Module 1 tip for docs: 53cea365 (#473). Current origin/main tip: 91903511.
+Context report (D1–D14 aligned; D15–D16 intentional amendments; D17 open): /home/ryan/projects/pma/reports/module1/identity-module-1-report.html
+Module 1 tip for docs: 53cea365 (#473). TMS-291: 35174824 (#476). Current origin/main tip: ddd2d2b1 (2026-09-28).
 
-Only remaining follow-up from the Module 1 close-out session:
+TMS-291 is Done (#476, httpx.CapabilityOf + authz.DecideRoute, ~117 sites in 17 packages; ADR-0114 §12). Its four follow-ups were filed under TMS-216 on 2026-09-26 and are all Backlog:
 
-**TMS-291** — one route-table-sourced capability accessor (TMS-236 resolver) replaces ~27 duplicated sites.
-- State: Backlog on Plane.
-- Dependency: TMS-236 resolver merged in #422 (25 Sep). TMS-236 itself may still show In Progress; the resolver is what unblocked this ticket.
-- Start from: TMS-291’s newest Plane comment and PR #422 (ADR-0118 / credential-registry first slice).
-- Deliverable: pick up TMS-291 — size it, confirm the resolver surface on main, and either implement or produce a short plan with anchors. Ask before writing to Plane.
+- **TMS-373** — ban rbac.GrantedTo/GrantableAt at handler sites and resolve rbac import aliases in the conformance test (the remaining enforcement gap; drift D17).
+- **TMS-374** — collapse the 11 package-local refuseUnlessDecided copies into one authz helper.
+- **TMS-375** — tenant's decisionAwareStore test fake duplicates the repository's permission check.
+- **TMS-376** — dedicated no-gate 500 test for vendors.grantTenant.
+- Start from: each ticket's newest Plane comment (none yet beyond the body), TMS-291's 2026-09-26 "Done" comment and ADR-0114 §12 on main.
+- Deliverable: size the four, confirm the surface on current main, and either implement or produce a short plan with anchors. Ask before writing to Plane.
 
 Optional non-blocking hygiene (not a ticket): from the office network, run `make vendor-requirements` so `docs/requirements/identity-module-1.md`’s header matches the standard script line (today it notes MCP connector provenance).</pre>
     </div>
   </section>
 
   <footer>
-    Updated 2026-09-25 23:59 (+08). Main tip <code>91903511</code>; Module 1 docs tip
-    <code>53cea365</code> (#473). Sources: GitHub (#405…#462, #472, #473), Plane TMS-216
-    documentation close-out, Outline 03.02.05 rev 11, Notion Narya + Daily Tracker,
-    ADR-0113/0114/0117 Accepted, <code>docs/requirements/identity-module-1.md</code>.
-    All Module 1 drift D1–D14 aligned. Next: TMS-291.
+    Updated 2026-09-28 01:31 (+08). Main tip <code>ddd2d2b1</code>; Module 1 docs tip
+    <code>53cea365</code> (#473). Sources: GitHub (#405…#462, #472, #473, #476, and later-module
+    #480/#500/#510/#525/#527), Plane TMS-216 comments + TMS-291/373–376, Outline 03.02.05 rev 11,
+    Notion Narya + Daily Tracker, ADR-0113/0114/0117 Accepted (amended in place),
+    <code>docs/requirements/identity-module-1.md</code>.
+    Module 1 drift D1–D14 aligned; D15–D16 amended by later modules; D17 open. Next: TMS-373–376.
   </footer>
 </div>
 
@@ -1155,9 +1201,9 @@ const ONPS = [
   {id:"ONP-01", g:"A", title:"Sealed variants; Match only; no type asserts outside identity/", status:"done"},
   {id:"ONP-02", g:"A", title:"Person / Key / Device field sets; Person has no tenant", status:"done"},
   {id:"ONP-03", g:"A", title:"TenantClaim + four KeyAuthority kinds; no all/none tenant", status:"done"},
-  {id:"ONP-04", g:"A", title:"Provenance narrows never grants; Via logged not persisted", status:"done"},
+  {id:"ONP-04", g:"A", title:"Provenance narrows never grants; Via logged not persisted", status:"done", note:"Later amended: Via also persisted as audit_log.actor_via (#525, ADR-0122 §2, Proposed)"},
   {id:"ONP-05", g:"A", title:"Immutable Principal; jobs use actor.System", status:"done"},
-  {id:"ONP-06", g:"B", title:"Only session/apikey/device mint; new packages need review", status:"done"},
+  {id:"ONP-06", g:"B", title:"Only session/apikey/device mint; new packages need review", status:"done", note:"Reviewed additions: identity/integration (ADR-0129 §7), identity/assertion (ADR-0122 §7–8)"},
   {id:"ONP-07", g:"B", title:"No request field fills identity except Asserted", status:"done"},
   {id:"ONP-08", g:"B", title:"Protected routes require Principal; nil refuse", status:"done"},
   {id:"ONP-09", g:"C", title:"Sealed Access via Derive; device refused on Core", status:"done"},

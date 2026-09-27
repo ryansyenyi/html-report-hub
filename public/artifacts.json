@@ -3,13 +3,17 @@
     {
       "id": "identity-module-1",
       "title": "Identity Module 1 — Completion & Drift Report",
-      "description": "Close-out report for the Module 1 identity refactor (single sealed Principal): closed, 26/26 requirements traced.",
+      "description": "Close-out for the Module 1 identity refactor (single sealed Principal): 26/26 requirements traced, TMS-291 done, follow-ups TMS-373–376 open, one open drift gap (D17).",
       "project": "Narya",
       "category": "Progress",
-      "tags": ["identity", "authentication", "refactor"],
+      "tags": [
+        "identity",
+        "authentication",
+        "refactor"
+      ],
       "path": "artifacts/narya/identity/identity-module-1-report.html",
       "createdAt": "2026-09-25",
-      "updatedAt": "2026-09-25"
+      "updatedAt": "2026-09-28"
     },
     {
       "id": "identity-module-2",
@@ -17,7 +21,11 @@
       "description": "Progress on the credential registry / CombinationID resolver: in progress, 18/46 REG items done, ADR-0118 still Proposed.",
       "project": "Narya",
       "category": "Progress",
-      "tags": ["identity", "credential-registry", "in-progress"],
+      "tags": [
+        "identity",
+        "credential-registry",
+        "in-progress"
+      ],
       "path": "artifacts/narya/identity/identity-module-2-report.html",
       "createdAt": "2026-09-26",
       "updatedAt": "2026-09-26"
@@ -28,7 +36,11 @@
       "description": "Progress on extracting identity into identity-svc: early stage, 5/33 slices done, gated on Module 2's golden matrix.",
       "project": "Narya",
       "category": "Progress",
-      "tags": ["identity", "microservices", "early-stage"],
+      "tags": [
+        "identity",
+        "microservices",
+        "early-stage"
+      ],
       "path": "artifacts/narya/identity/identity-module-3-report.html",
       "createdAt": "2026-09-26",
       "updatedAt": "2026-09-26"
