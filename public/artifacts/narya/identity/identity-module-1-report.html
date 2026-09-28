@@ -358,8 +358,7 @@
       <em>03.02.05 · Identity Module 1 — One Principal</em>.
       S0–S5, residue #457–#462, ADR accept (#472), and requirements vendoring (#473) are on
       <code>origin/main</code>. Plane, Outline and Notion were brought current on 25 Sep.
-      TMS-291 merged on 26 Sep (#476); four small TMS-291 follow-ups (TMS-373–376) sit in
-      Backlog under TMS-216. Later modules have since amended ADR-0114/0117 on purpose.
+      Module 1 drift is closed; its last follow-up, TMS-291, merged as #476 on 26 Sep.
     </p>
     <div class="meta-row">
       <span class="pill good"><strong>Code</strong> S0–S5 + #457–#462 + #476</span>
@@ -367,6 +366,7 @@
       <span class="pill good"><strong>TMS-216</strong> closed</span>
       <span class="pill good"><strong>Docs</strong> Outline / Notion / #473</span>
       <span class="pill warn"><strong>Open</strong> TMS-373–376</span>
+      <span class="pill warn"><strong>Staging smoke</strong> 33 pass · 2 fail · 27 Sep</span>
       <span class="pill"><strong>As of</strong> 2026-09-28 · 01:31</span>
       <span class="pill"><strong>Main tip</strong> ddd2d2b1</span>
     </div>
@@ -379,6 +379,7 @@
     <button data-target="examples">Examples</button>
     <button data-target="drift">Drift analysis</button>
     <button data-target="requirements">ONP-01…26</button>
+    <button data-target="testing">Staging test</button>
     <button data-target="followups">Follow-ups</button>
   </nav>
 
@@ -1110,6 +1111,85 @@ IsAdminKey := KeyID != "" && Tenant == ""
   </section>
 
   <!-- FOLLOW-UPS -->
+  <!-- TESTING -->
+  <section id="testing">
+    <h2>Staging regression test — 27 Sep</h2>
+    <p class="section-lead">
+      Browser smoke test of the portal on <code>narya-staging.pmadvisors.my</code> after Module 1 closed,
+      run 2026-09-27 23:20 → 2026-09-28 00:25 (+08) in Chrome against tenant <code>yonex-my</code>. Module 1
+      was a parity refactor, so the question was whether existing flows still behave exactly as before.
+      Accounts: a tenant administrator, a platform administrator and a tenant viewer. The operator typed the
+      sign-ins and the agent made every check. Write tests (group G, and C3) were not run.
+    </p>
+    <div class="grid-3">
+      <div class="card">
+        <div class="stat-label">Route / capability regressions</div>
+        <div class="stat" style="color:var(--good)">None</div>
+        <div>Every admin page loaded without 403/404; viewer got server 403s exactly where expected</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Results</div>
+        <div class="stat" style="color:var(--warn)">33 / 2 / 4</div>
+        <div>Pass / fail / skipped</div>
+      </div>
+      <div class="card">
+        <div class="stat-label">Possible Module 1 issue</div>
+        <div class="stat" style="color:var(--bad)">1</div>
+        <div>Sign-out returned 503 on 2 of 3 sign-outs (X3), not confirmed without logs</div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <strong>Staging is not Module 1 alone.</strong> About 15 PRs merged to <code>main</code> on 27 Sep
+      (TMS-333, -336, -396, -401 and others), and <code>web-narya</code> redeployed during the run. A
+      failure here is not automatically a Module 1 regression.
+    </div>
+
+    <table>
+      <tr><th>Group</th><th>Result</th><th>What was checked</th></tr>
+      <tr><td>A · Entry and tenant sign-in</td><td><span class="badge done">8 pass</span></td><td>Org-code page, unknown-code message, capitals lowercase to <code>/t/yonex-my/login</code>, signed-out <code>/audit</code> goes to login, return to the requested page after sign-in, session cookie HttpOnly with only <code>__Host-narya_csrf</code> readable by script, still signed in after reload. A wrong password gives a generic message that says nothing about whether the email exists.</td></tr>
+      <tr><td>B · Admin pages</td><td><span class="badge done">12 pass</span></td><td>Users list and detail, roles, audit (names shown), devices list and detail, models, applications list and detail, device parameters tab, products, enterprises, companies, tradings, transactions, volume, reports, profile. All 2xx apart from X1. There is no standalone <code>/parameters</code> route; that is expected.</td></tr>
+      <tr><td>C · Viewer role</td><td><span class="badge done">2 pass</span> <span class="badge open">1 skipped</span></td><td>Sidebar hides Reports, Users and Audit trail. Typing those URLs gives a no-access panel (403 from <code>access/persons</code> and <code>audit/records</code>; Reports is gated in the client). Visible pages return 2xx. C3 (refused write) skipped.</td></tr>
+      <tr><td>D · Plane separation</td><td><span class="badge done">2 pass</span></td><td>A tenant session on <code>/platform/tenants</code> goes to <code>/</code> then <code>/t/yonex-my</code>, with no platform calls. Signed out, <code>/platform/tenants</code> goes to <code>/platform/login</code>. The test plan said <code>/</code>, but the code (<code>platform/_auth.tsx</code>) is right.</td></tr>
+      <tr><td>E · Platform</td><td><span class="badge done">6 pass</span></td><td>Sign-in lands on <code>/platform/tenants</code> with no forced password change. Tenants list and detail, integration keys. Sidebar shows only Tenants and Integration keys. A platform session on <code>/t/yonex-my</code> goes to <code>/platform</code>. A wrong password gives the same message as the tenant page, word for word (PLAT-20).</td></tr>
+      <tr><td>F · Sign-out</td><td><span class="badge drift">2 fail</span> <span class="badge done">3 pass</span></td><td>The session ended every time: cookies cleared, then <code>/auth/me</code> returned 401, and Back plus reload went to sign-in with no data calls. But <code>DELETE /api/v1/auth/session</code> returned <strong>503</strong> for the tenant admin and the platform admin, and 204 for the viewer.</td></tr>
+      <tr><td>G · Writes</td><td><span class="badge open">skipped</span></td><td>Not approved for this run.</td></tr>
+    </table>
+
+    <h3 style="margin-top:22px">Findings, most important first</h3>
+    <div class="callout bad">
+      <strong>X3 · Sign-out returns 503 on some sign-outs (possible Module 1 / session-plane issue).</strong>
+      <code>DELETE /api/v1/auth/session</code> returned 503 at about 23:48 (tenant) and 00:16 (platform), and 204 at
+      00:24 (viewer). Users see nothing wrong today, because the session still ends. It becomes a real bug if
+      the portal ever treats a 503 on sign-out as "still signed in". The new 503 path in
+      <code>httpx.RequireSession</code> (TMS-333) is not the cause, because nothing wraps
+      <code>ErrSessionUnavailable</code> yet. The likely cause is an upstream 503 passed through by the BFF, or a pod mid-rollout. The response body and
+      the logs were not captured. <em>Next:</em> search Loki for that call's 503s between 15:45 and 16:20 UTC on 27 Sep.
+      <br><br><strong>Retest, 28 Sep 00:58–01:02:</strong> 10 sign-in/sign-out cycles in a row, and all 10
+      sign-outs returned 204 followed by 401. No 503. Tracing the code shows Core and the BFF cannot return 503
+      on this path, and the session was revoked both times, so the 503 was most likely added at the edge
+      (Worker or tunnel) while the staging node was CPU-starved (infra-gitops #170). <strong>Downgraded:</strong>
+      not a Module 1 regression. Reopen if it recurs.
+    </div>
+    <div class="callout warn">
+      <strong>X2 · A tab left open across a <code>web-narya</code> deploy breaks.</strong> Old asset files
+      (<code>/assets/*.js</code>) return <code>200 text/html</code> (the app's fallback page) instead of 404,
+      so the next page that loads new code fails (<code>Failed to fetch dynamically imported module</code>).
+      The app reloaded, showed "The portal could not start" once, then recovered on its own. Not Module 1.
+    </div>
+    <div class="callout warn">
+      <strong>X1 · The dashboard asks for more applications than the API allows.</strong>
+      <code>/t/{slug}</code> calls <code>applications?limit=200</code>, but the API caps <code>limit</code> at
+      100, so the call returns 400. The widget that uses it silently gets nothing. Not Module 1.
+    </div>
+    <p style="font-size:13px;color:var(--muted)">
+      Also noted: <code>/auth/me</code> fires 3–5 times per signed-out page load. Audit rows from 17 Sep show
+      "Name not recorded", while every row from 22 Sep onward carries a name, which looks like old data. The admin's sign-in
+      appeared in the audit as "Account switch", and the failed attempt was not audited. The full report with
+      reproduction steps is in <code>Downloads\narya-staging-smoke-2026-09-27\report.md</code>.
+    </p>
+  </section>
+
   <section id="followups">
     <h2>Follow-ups and next modules</h2>
     <div class="grid-2">
@@ -1164,6 +1244,7 @@ IsAdminKey := KeyID != "" && Tenant == ""
     Notion Narya + Daily Tracker, ADR-0113/0114/0117 Accepted (amended in place),
     <code>docs/requirements/identity-module-1.md</code>.
     Module 1 drift D1–D14 aligned; D15–D16 amended by later modules; D17 open. Next: TMS-373–376.
+    Staging test section added 2026-09-28 (+08).
   </footer>
 </div>
 
@@ -1251,7 +1332,7 @@ document.querySelectorAll("#toc button").forEach(btn => {
   });
 });
 
-const sections = ["verdict","completion","architecture","examples","drift","requirements","followups"];
+const sections = ["verdict","completion","architecture","examples","drift","requirements","testing","followups"];
 const tocBtns = [...document.querySelectorAll("#toc button")];
 const io = new IntersectionObserver((entries) => {
   entries.forEach(e => {
