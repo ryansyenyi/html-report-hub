@@ -1,0 +1,670 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Identity Outbox Relay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F2F5F4; --surface:#FFFFFF; --surface-2:#E8EEED; --ink:#15212B; --muted:#586874; --rule:#CFD9DB;
+  --accent:#0E6F79; --accent-soft:#D5EBEC; --ok:#2C7A4B; --ok-soft:#DCEFE2; --warn:#A8690F; --warn-soft:#F6E8CF;
+  --bad:#B03A2A; --bad-soft:#F6DDD7; --idle:#9AA8B1;
+  --sans:"Schibsted Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F161C; --surface:#162029; --surface-2:#1C2833; --ink:#E3EAEE; --muted:#93A3AE; --rule:#2B3A46;
+    --accent:#52B8C2; --accent-soft:#16363B; --ok:#62C08A; --ok-soft:#173226; --warn:#E0A54A; --warn-soft:#3A2C14;
+    --bad:#EC7A68; --bad-soft:#3D1F1A; --idle:#5E6E7A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F161C; --surface:#162029; --surface-2:#1C2833; --ink:#E3EAEE; --muted:#93A3AE; --rule:#2B3A46;
+  --accent:#52B8C2; --accent-soft:#16363B; --ok:#62C08A; --ok-soft:#173226; --warn:#E0A54A; --warn-soft:#3A2C14;
+  --bad:#EC7A68; --bad-soft:#3D1F1A; --idle:#5E6E7A;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;padding-inline:20px;padding-block:0 64px}
+.wrap{max-width:1080px;margin:0 auto}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--surface-2);padding:.1em .35em;border-radius:4px;overflow-wrap:anywhere}
+a{color:var(--accent)}
+h1,h2,h3{text-wrap:balance;line-height:1.15;margin:0}
+p{margin:0;max-width:68ch}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+header.hero{padding-block:48px 28px;display:grid;gap:18px;border-bottom:1px solid var(--rule)}
+header.hero h1{font-size:clamp(34px,5.4vw,56px);font-weight:800;letter-spacing:-.02em}
+header.hero h1 .slug{display:block;font-family:var(--mono);font-size:.34em;font-weight:500;letter-spacing:0;color:var(--accent);margin-bottom:10px}
+.lede{font-size:18px;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--mono);font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--rule);background:var(--surface);display:inline-flex;gap:6px;align-items:center}
+.chip i{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--idle)}
+.chip.ok i{background:var(--ok)} .chip.warn i{background:var(--warn)} .chip.bad i{background:var(--bad)} .chip.acc i{background:var(--accent)}
+
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule);margin-inline:-20px;padding:10px 20px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.toc a{font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:6px;white-space:nowrap}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--ink);background:var(--surface-2);outline:none}
+
+section{padding-block:44px 8px;display:grid;gap:18px;scroll-margin-top:56px}
+section>h2{font-size:28px;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--muted)}
+
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.glance div{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px;display:grid;gap:6px;align-content:start}
+.glance h3{font-size:15px;font-weight:700}
+.glance p{font-size:14.5px;color:var(--muted)}
+
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--rule);background:var(--surface-2)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button,.btn{font:500 14px var(--sans);color:var(--ink);background:transparent;border:0;padding:7px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.btn{border:1px solid var(--rule);border-radius:8px;background:var(--surface)}
+.btn:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.45;cursor:default}
+.scroll{overflow-x:auto}
+.scroll svg{display:block;min-width:760px;width:100%;height:auto}
+.caption{padding:14px 16px;border-top:1px solid var(--rule);font-size:15px;display:grid;gap:6px}
+.caption p{max-width:none}
+
+svg text{font-family:var(--sans);fill:var(--ink)}
+svg .m{font-family:var(--mono);font-size:11.5px;fill:var(--muted)}
+svg .t{font-size:14px;font-weight:700}
+svg .s{font-size:12px;fill:var(--muted)}
+svg .box{fill:var(--surface);stroke:var(--rule);stroke-width:1.5}
+svg .box.acc{stroke:var(--accent);stroke-width:2}
+svg .box.ghost{fill:var(--surface-2);stroke-dasharray:5 4}
+svg .box.bad{fill:var(--bad-soft);stroke:var(--bad);stroke-dasharray:5 4}
+svg .edge{stroke:var(--muted);stroke-width:1.6;fill:none}
+svg .edge.acc{stroke:var(--accent)} svg .edge.ok{stroke:var(--ok)} svg .edge.bad{stroke:var(--bad)} svg .edge.warn{stroke:var(--warn)}
+svg .edge.dash{stroke-dasharray:5 4}
+svg .lbl{font-size:11.5px;fill:var(--muted)}
+svg .ah{fill:var(--muted)} svg .ah.acc{fill:var(--accent)} svg .ah.ok{fill:var(--ok)} svg .ah.bad{fill:var(--bad)} svg .ah.warn{fill:var(--warn)}
+#topo.today .s4{display:none} #topo.s4 .today{display:none}
+.flowdot{fill:var(--accent)}
+
+/* lifecycle */
+.lc-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+@media (max-width:820px){.lc-grid{grid-template-columns:1fr}}
+.lc-side{border-left:1px solid var(--rule);padding:16px;display:grid;gap:10px;align-content:start}
+@media (max-width:820px){.lc-side{border-left:0;border-top:1px solid var(--rule)}}
+.state{cursor:pointer}
+.state rect{fill:var(--surface);stroke:var(--rule);stroke-width:1.5;transition:fill .2s,stroke .2s}
+.state:hover rect{stroke:var(--accent)}
+.state.sel rect{stroke:var(--accent);stroke-width:2.5}
+.state.lit rect{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.5}
+.state.k-ok.lit rect{fill:var(--ok-soft);stroke:var(--ok)}
+.state.k-warn.lit rect{fill:var(--warn-soft);stroke:var(--warn)}
+.state.k-bad.lit rect{fill:var(--bad-soft);stroke:var(--bad)}
+.state .pip{fill:var(--idle)} .state.k-ok .pip{fill:var(--ok)} .state.k-warn .pip{fill:var(--warn)} .state.k-bad .pip{fill:var(--bad)} .state.k-acc .pip{fill:var(--accent)}
+.detail h3{font-size:17px}
+.detail pre,.stepbox pre{margin:0;font:12.5px/1.5 var(--mono);background:var(--surface-2);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre}
+.cite{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.log{font:12.5px/1.6 var(--mono);background:var(--surface-2);border-radius:8px;padding:10px 12px;min-height:150px;max-height:230px;overflow:auto}
+.log div{white-space:pre-wrap}
+.log .ok{color:var(--ok)} .log .bad{color:var(--bad)} .log .warn{color:var(--warn)} .log .mut{color:var(--muted)}
+
+/* sequence */
+.seq .msg{opacity:.22;transition:opacity .25s}
+.seq .msg.on{opacity:1}
+.seq .msg.cur line,.seq .msg.cur path{stroke:var(--accent);stroke-width:2.4}
+.seq .msg.cur polygon{fill:var(--accent)}
+.seq .msg.cur text{fill:var(--ink);font-weight:600}
+.seq .life{stroke:var(--rule);stroke-width:1.5;stroke-dasharray:4 5}
+.stepbox{display:grid;gap:10px;padding:16px;border-top:1px solid var(--rule)}
+.stepbox h3{font-size:17px}
+.stepnum{font-family:var(--mono);color:var(--accent);font-size:13px}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);gap:0}
+@media (max-width:760px){.calc{grid-template-columns:1fr}}
+.calc .ctl{padding:16px;display:grid;gap:16px;align-content:start;border-right:1px solid var(--rule)}
+@media (max-width:760px){.calc .ctl{border-right:0;border-bottom:1px solid var(--rule)}}
+.calc label{display:grid;gap:6px;font-size:14px;font-weight:600}
+.calc label span.v{font-family:var(--mono);font-weight:500;color:var(--accent)}
+.calc input[type=range]{width:100%;accent-color:var(--accent)}
+.calc .out{padding:16px;display:grid;gap:12px}
+.bars{display:grid;gap:6px}
+.bar{display:grid;grid-template-columns:86px minmax(0,1fr) 84px;gap:10px;align-items:center;font-size:13px;font-variant-numeric:tabular-nums}
+.bar .track{height:14px;background:var(--surface-2);border-radius:4px;position:relative;overflow:hidden}
+.bar .fill{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:4px}
+.bar.park .fill{background:var(--warn)}
+.bar .n{font-family:var(--mono);color:var(--muted)} .bar .d{font-family:var(--mono);text-align:right}
+.total{font-size:15px}
+.total b{font-family:var(--mono)}
+
+/* tables */
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:12px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--surface-2)}
+td.k{font-family:var(--mono);font-size:13px;white-space:nowrap}
+td.num{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:16px;display:grid;gap:10px;align-content:start}
+.card h3{font-size:16px}
+.card ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14.5px}
+
+.gaps{display:grid;gap:10px}
+.gap{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:14px 16px}
+.sev{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:5px;height:max-content;white-space:nowrap}
+.sev.warn{background:var(--warn-soft);color:var(--warn)} .sev.bad{background:var(--bad-soft);color:var(--bad)} .sev.info{background:var(--accent-soft);color:var(--accent)}
+.gap h3{font-size:15.5px;margin-bottom:4px}
+.gap p{font-size:14.5px;color:var(--muted)}
+
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--muted);display:grid;gap:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <h1><span class="slug">apps/identity-svc-outboxrelay</span>Identity outbox relay</h1>
+  <p class="lede">A single-leader worker that moves rows from identity-svc's <code>event_outbox</code> table onto the RabbitMQ exchange <code>identity.events</code>. It exists so that an identity change and its audit event commit together or not at all. It is deployed to staging but carries no traffic yet. The first event, <code>identity.audit.recorded</code>, arrives in slice S4.</p>
+  <div class="chips">
+    <span class="chip acc"><i></i>staging · dark app</span>
+    <span class="chip"><i></i>0 producers today</span>
+    <span class="chip"><i></i>0 consumers today</span>
+    <span class="chip warn"><i></i>no production overlay</span>
+    <span class="chip"><i></i>image 804550f3</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <a href="#why">Purpose</a><a href="#topology">Topology</a><a href="#events">Planned events</a><a href="#lifecycle">Row lifecycle</a><a href="#tick">One relay tick</a><a href="#retry">Retry budget</a><a href="#deploy">Deployment</a><a href="#observe">Observability</a><a href="#gaps">Gaps</a>
+</nav>
+
+<section id="why">
+  <span class="eyebrow">Purpose</span>
+  <h2>Why identity-svc needs a relay</h2>
+  <p>identity-svc owns human identity: persons, login identities, sessions and signing keys (ADR-0119). Core keeps accounts, roles and every authorization decision, so Core must learn about each identity change for its audit log. Publishing to RabbitMQ in the request path would let a crash between the database commit and the publish lose that record. The transactional outbox avoids that gap. The identity change and an <code>event_outbox</code> row commit in the same transaction, and this relay delivers the row afterwards with at-least-once guarantees.</p>
+  <div class="glance">
+    <div><h3>Atomic with the change</h3><p>The audit row commits with the session insert, revoke, rotate, reset, relink or bootstrap reset. If writing the row fails, the identity change fails too (ADR-0123).</p></div>
+    <div><h3>At-least-once delivery</h3><p>Uses publisher confirms and a <code>mandatory</code> publish, so an unroutable message counts as a failure. MessageId is the row id, so consumers can drop duplicates.</p></div>
+    <div><h3>One active leader</h3><p><code>pg_try_advisory_lock</code> is taken every tick. A second replica is a standby that makes no progress: more replicas add availability, not throughput.</p></div>
+    <div><h3>Failures stay recoverable</h3><p>Failed rows back off exponentially. Exhausted rows are parked with <code>next_attempt_at = infinity</code>, never deleted, so they can be inspected and replayed.</p></div>
+  </div>
+</section>
+
+<section id="topology">
+  <span class="eyebrow">Topology</span>
+  <h2>Where it sits</h2>
+  <p class="sub">Switch between what is deployed on staging today and the flow after slice S4 adds the producer and Core's consumer.</p>
+  <div class="panel">
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Topology view">
+        <button id="tv-today" aria-pressed="true">Today</button>
+        <button id="tv-s4" aria-pressed="false">After S4</button>
+      </div>
+      <button class="btn" id="tv-play">Send an event</button>
+    </div>
+    <div class="scroll">
+    <svg id="topo" class="today" viewBox="0 0 1000 330" role="img" aria-label="Topology diagram of the identity outbox relay">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0L10,5L0,10z"/></marker>
+        <marker id="aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah acc" d="M0,0L10,5L0,10z"/></marker>
+        <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah bad" d="M0,0L10,5L0,10z"/></marker>
+        <marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah ok" d="M0,0L10,5L0,10z"/></marker>
+      </defs>
+      <!-- producer -->
+      <g class="today"><rect class="box ghost" x="16" y="70" width="170" height="92" rx="10"/>
+        <text class="t" x="30" y="96">identity-svc-api</text><text class="s" x="30" y="116">no call to events.Enqueue</text><text class="s" x="30" y="134">JWKS and mint land in S4</text><text class="m" x="30" y="152">RUN_MODE=api</text></g>
+      <g class="s4"><rect class="box acc" x="16" y="70" width="170" height="92" rx="10"/>
+        <text class="t" x="30" y="96">identity-svc-api</text><text class="s" x="30" y="116">session / reset / relink tx</text><text class="s" x="30" y="134">+ outbox row, same tx</text><text class="m" x="30" y="152">RUN_MODE=api</text></g>
+      <!-- db -->
+      <rect class="box" x="230" y="60" width="170" height="112" rx="10"/>
+      <text class="t" x="244" y="86">identity Postgres</text>
+      <text class="m" x="244" y="106">event_outbox</text>
+      <text class="s" x="244" y="126">persons · login_identities</text>
+      <text class="s" x="244" y="144">sessions · signing_keys</text>
+      <text class="m" x="244" y="162">secret identity-svc-db-app</text>
+      <!-- relay -->
+      <rect class="box acc" x="450" y="60" width="180" height="112" rx="10"/>
+      <text class="t" x="464" y="86">outboxrelay pod</text>
+      <text class="s" x="464" y="106">poll 1s · batch 100</text>
+      <text class="s" x="464" y="124">advisory lock leader</text>
+      <text class="s" x="464" y="142">confirms + mandatory</text>
+      <text class="m" x="464" y="162">replicas: 1 · wave 2</text>
+      <!-- exchange -->
+      <rect class="box" x="680" y="60" width="150" height="112" rx="10"/>
+      <text class="t" x="694" y="86">identity.events</text>
+      <text class="s" x="694" y="106">topic exchange</text>
+      <text class="s" x="694" y="124">durable</text>
+      <text class="m" x="694" y="144">vhost events</text>
+      <text class="m" x="694" y="162">user: write-only</text>
+      <!-- consumer side -->
+      <g class="today"><rect class="box bad" x="860" y="60" width="130" height="112" rx="10"/>
+        <text class="t" x="872" y="86">no binding</text><text class="s" x="872" y="106">publish would be</text><text class="s" x="872" y="124">returned unroutable</text><text class="s" x="872" y="142">→ parked after</text><text class="s" x="872" y="160">5 attempts (~7.5s)</text></g>
+      <g class="s4"><rect class="box acc" x="860" y="44" width="130" height="80" rx="10"/>
+        <text class="t" x="872" y="68">core queue</text><text class="m" x="872" y="88">core.identity.</text><text class="m" x="872" y="104">audit.recorded</text><text class="s" x="872" y="118">quorum</text>
+        <rect class="box" x="860" y="206" width="130" height="78" rx="10"/>
+        <text class="t" x="872" y="230">core</text><text class="s" x="872" y="250">eventhandler</text><text class="s" x="872" y="268">→ audit_log</text>
+        <rect class="box ghost" x="680" y="222" width="150" height="54" rx="10"/>
+        <text class="t" x="694" y="246">core.dlx</text><text class="s" x="694" y="264">dead letters</text>
+        <path class="edge acc" d="M925,124 V204" marker-end="url(#aa)"/><text class="lbl" x="932" y="170">consume</text>
+        <path class="edge dash" d="M860,100 C 800,140 780,180 760,220" marker-end="url(#a)"/><text class="lbl" x="752" y="196" text-anchor="end">rejected</text>
+        <path class="edge acc" d="M830,100 H858" marker-end="url(#aa)"/>
+      </g>
+      <!-- main edges -->
+      <path id="e1" class="edge acc" d="M186,116 H228" marker-end="url(#aa)"/>
+      <path id="e2" class="edge acc" d="M400,116 H448" marker-end="url(#aa)"/>
+      <path id="e3" class="edge acc" d="M630,116 H678" marker-end="url(#aa)"/>
+      <path class="edge bad today" d="M830,116 H858" marker-end="url(#ab)"/>
+      <text class="lbl" x="207" y="106" text-anchor="middle">tx</text>
+      <text class="lbl" x="424" y="106" text-anchor="middle">claim</text>
+      <text class="lbl" x="654" y="106" text-anchor="middle">publish</text>
+      <path class="edge dash" d="M540,172 V236 H315 V174" marker-end="url(#a)"/>
+      <text class="lbl" x="428" y="252" text-anchor="middle">mark published_at / attempts, commit</text>
+      <path class="edge ok dash" d="M700,172 C 690,200 640,210 600,174" marker-end="url(#ao)"/>
+      <text class="lbl" x="660" y="214" text-anchor="middle">ack</text>
+      <text class="m" x="16" y="312">Deployed pair: identity-svc-api + identity-svc-outboxrelay · both bumped by one deploy(staging) commit</text>
+      <circle id="dot" class="flowdot" r="7" cx="-20" cy="-20"/>
+    </svg>
+    </div>
+    <div class="caption" id="topo-cap"></div>
+  </div>
+</section>
+
+<section id="events">
+  <span class="eyebrow">Planned events · S4</span>
+  <h2>What it will publish</h2>
+  <p>The plan has one event type, <code>identity.audit.recorded</code>. Each identity action travels as a value of its <code>action</code> field; there is no separate routing key per action, and nothing else is planned for <code>identity.events</code> (ADR-0123 §2, E3-05, E3-44, E3-77).</p>
+  <div class="panel">
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Filter actions by who triggers them">
+        <button data-ev="all" aria-pressed="true">All</button>
+        <button data-ev="bff" aria-pressed="false">Via the BFF</button>
+        <button data-ev="core" aria-pressed="false">Called by Core</button>
+        <button data-ev="job" aria-pressed="false">Bootstrap job</button>
+      </div>
+      <span class="cite" id="ev-count"></span>
+    </div>
+    <div class="scroll"><table>
+      <thead><tr><th>action</th><th>Triggered by</th><th>actor_via</th><th>Recording</th></tr></thead>
+      <tbody id="ev-rows">
+        <tr data-g="bff"><td class="k">sign_in</td><td>Tenant sign-in through the BFF</td><td class="num">BFF key fingerprint</td><td>same tx</td></tr>
+        <tr data-g="bff"><td class="k">sign_in_failed</td><td>Failed tenant sign-in</td><td class="num">BFF key fingerprint</td><td><span class="sev warn">best-effort</span></td></tr>
+        <tr data-g="bff"><td class="k">platform_sign_in</td><td>Platform sign-in through the BFF</td><td class="num">BFF key fingerprint</td><td>same tx</td></tr>
+        <tr data-g="bff"><td class="k">platform_sign_in_failed</td><td>Failed platform sign-in</td><td class="num">BFF key fingerprint</td><td><span class="sev warn">best-effort</span></td></tr>
+        <tr data-g="bff"><td class="k">sign_out</td><td>Session revoked by the person</td><td class="num">BFF key fingerprint</td><td>same tx</td></tr>
+        <tr data-g="bff"><td class="k">password_change</td><td>Person changes their password</td><td class="num">BFF key fingerprint</td><td>same tx</td></tr>
+        <tr data-g="bff"><td class="k">account_switch</td><td>Session rotated to another account</td><td class="num">BFF key fingerprint</td><td>same tx</td></tr>
+        <tr data-g="core"><td class="k">person_credential_reset</td><td>Admin resets a person's credential; Core calls identity-svc</td><td class="num">core</td><td>same tx</td></tr>
+        <tr data-g="core"><td class="k">person_relink</td><td>Admin relinks a login identity; Core calls identity-svc</td><td class="num">core</td><td>same tx</td></tr>
+        <tr data-g="job"><td class="k">platform_credential_reset</td><td>Bootstrap reset of a Platform Administrator. Now targets the person (<code>target_type='person'</code>, <code>person_id</code> NULL, a REG-45 change)</td><td class="num">NULL</td><td>same tx</td></tr>
+        <tr data-g="job"><td class="k">platform_bootstrap</td><td>Bootstrap job creates the first Platform Administrator. Listed in ADR-0122 only, see below</td><td class="num">NULL</td><td>same tx</td></tr>
+      </tbody>
+    </table></div>
+    <div class="caption"><p><b>Same tx</b>: the event commits with the identity change, and if writing the event fails the change fails too. <b>Best-effort</b>: failed sign-ins are recorded as today, and a failure to record one does not fail the request.</p></div>
+  </div>
+  <div class="cols">
+    <div class="card"><h3>Payload: a mirror of <code>audit.Record</code></h3><ul>
+      <li><code>event_id</code>: UUIDv7, becomes <code>audit_log.id</code></li>
+      <li><code>occurred_at</code>: time of the change, RFC 3339 with microseconds. A late event lands in the partition for the month the change happened.</li>
+      <li><code>action</code>, <code>outcome</code></li>
+      <li><code>actor{kind,id,label}</code>, <code>via</code></li>
+      <li>person, account and business-context fields</li>
+      <li><code>capability</code>, <code>target_type</code>, <code>target_id</code>, <code>request_id</code></li>
+      <li>optional <code>reason</code>, <code>changed_fields</code>, reference: absent for every current action</li>
+    </ul></div>
+    <div class="card"><h3>How Core records it</h3><ul>
+      <li>Consumed from the quorum queue <code>core.identity.audit.recorded</code>, dead-lettering to <code>core.dlx</code></li>
+      <li>One <code>audit_log</code> row per event. A replay writes nothing: <code>ON CONFLICT (id, occurred_at) DO NOTHING</code> plus <code>event_inbox</code></li>
+      <li>An event with no actor is dead-lettered and alerts, because the audit writer refuses it</li>
+      <li>A row reaches the audit screen seconds after the change, or later during a relay or broker outage</li>
+      <li>The audit screen and its filter are unchanged</li>
+    </ul></div>
+    <div class="card"><h3>Deliberately no event</h3><ul>
+      <li>Revocations Core instructs: account or platform-account status change, attachment detach, <code>SuspendPersonAccounts</code>, tenant session revocation</li>
+      <li>Suspension</li>
+      <li>"Ensure" calls: create, find, re-issue</li>
+      <li>In each case Core writes its own audit row in its own transaction, so an identity-side event would duplicate it (ADR-0041)</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="lifecycle">
+  <span class="eyebrow">Row lifecycle</span>
+  <h2>What happens to one outbox row</h2>
+  <p class="sub">Click a state for its SQL and source. Run a scenario to follow a row through the relay.</p>
+  <div class="panel">
+    <div class="toolbar">
+      <button class="btn" data-scn="happy">Queue bound (S4)</button>
+      <button class="btn" data-scn="unroutable">No queue bound (today)</button>
+      <button class="btn" data-scn="outage">Broker blip, then recovers</button>
+      <button class="btn" data-scn="shutdown">Pod shutdown mid-batch</button>
+    </div>
+    <div class="lc-grid">
+      <div class="scroll">
+      <svg id="lc" viewBox="0 0 700 330" role="img" aria-label="Outbox row state machine">
+        <defs>
+          <marker id="la" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0L10,5L0,10z"/></marker>
+          <marker id="lo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah ok" d="M0,0L10,5L0,10z"/></marker>
+          <marker id="lw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah warn" d="M0,0L10,5L0,10z"/></marker>
+          <marker id="lb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah bad" d="M0,0L10,5L0,10z"/></marker>
+        </defs>
+        <path class="edge" d="M150,150 H206" marker-end="url(#la)"/>
+        <text class="lbl" x="178" y="140" text-anchor="middle">due</text>
+        <path class="edge ok" d="M330,128 C 360,80 380,62 424,62" marker-end="url(#lo)"/>
+        <text class="lbl" x="352" y="76" text-anchor="end">ack, routed</text>
+        <path class="edge" d="M554,62 H572" marker-end="url(#la)"/>
+        <path class="edge warn" d="M330,172 C 360,220 380,240 424,240" marker-end="url(#lw)"/>
+        <text class="lbl" x="354" y="232" text-anchor="end">error, budget left</text>
+        <path class="edge bad" d="M340,150 H572" marker-end="url(#lb)"/>
+        <text class="lbl" x="456" y="142" text-anchor="middle">error, attempts+1 = max</text>
+        <path class="edge warn dash" d="M488,270 C 460,318 110,318 84,184" marker-end="url(#lw)"/>
+        <text class="lbl" x="290" y="312" text-anchor="middle">backoff elapses (checked on next 1s tick)</text>
+        <path class="edge dash" d="M232,128 C 200,96 130,96 104,118" marker-end="url(#la)"/>
+        <text class="lbl" x="168" y="92" text-anchor="middle">shutdown: rollback, no budget spent</text>
+
+        <g class="state k-acc" data-st="pending" tabindex="0" role="button" aria-label="pending"><rect x="16" y="118" width="134" height="64" rx="10"/><circle class="pip" cx="32" cy="138" r="5"/><text class="t" x="44" y="143">pending</text><text class="m" x="30" y="166">published_at NULL</text></g>
+        <g class="state k-acc" data-st="claimed" tabindex="0" role="button" aria-label="claimed"><rect x="208" y="118" width="132" height="64" rx="10"/><circle class="pip" cx="224" cy="138" r="5"/><text class="t" x="236" y="143">claimed</text><text class="m" x="222" y="166">SKIP LOCKED</text></g>
+        <g class="state k-ok" data-st="published" tabindex="0" role="button" aria-label="published"><rect x="426" y="30" width="128" height="64" rx="10"/><circle class="pip" cx="442" cy="50" r="5"/><text class="t" x="454" y="55">published</text><text class="m" x="440" y="78">published_at=now</text></g>
+        <g class="state" data-st="swept" tabindex="0" role="button" aria-label="swept"><rect x="574" y="30" width="112" height="64" rx="10"/><circle class="pip" cx="590" cy="50" r="5"/><text class="t" x="602" y="55">swept</text><text class="m" x="588" y="78">age &gt; 336h</text></g>
+        <g class="state k-warn" data-st="backoff" tabindex="0" role="button" aria-label="backing off"><rect x="426" y="208" width="128" height="64" rx="10"/><circle class="pip" cx="442" cy="228" r="5"/><text class="t" x="454" y="233">backing off</text><text class="m" x="440" y="256">attempts+1</text></g>
+        <g class="state k-bad" data-st="parked" tabindex="0" role="button" aria-label="parked"><rect x="574" y="118" width="112" height="64" rx="10"/><circle class="pip" cx="590" cy="138" r="5"/><text class="t" x="602" y="143">parked</text><text class="m" x="586" y="166">next=infinity</text></g>
+      </svg>
+      </div>
+      <div class="lc-side">
+        <div class="detail" id="lc-detail"></div>
+        <div class="log" id="lc-log" aria-live="polite"><div class="mut">Pick a scenario above.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tick">
+  <span class="eyebrow">Sequence</span>
+  <h2>One relay tick, step by step</h2>
+  <p class="sub">The loop runs every <code>MQ_OUTBOX_POLL_INTERVAL</code> (1s). Each tick drains one batch of at most 100 rows. Use the arrow keys or the buttons.</p>
+  <div class="panel seq">
+    <div class="toolbar">
+      <button class="btn" id="sq-prev">← Previous</button>
+      <button class="btn" id="sq-next">Next →</button>
+      <button class="btn" id="sq-all">Show all</button>
+      <span class="cite" id="sq-count"></span>
+    </div>
+    <div class="scroll">
+    <svg id="sq" viewBox="0 0 900 470" role="img" aria-label="Sequence diagram of one relay tick" tabindex="0">
+      <defs>
+        <marker id="sa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><polygon class="ah" points="0,0 10,5 0,10"/></marker>
+      </defs>
+      <g>
+        <rect class="box acc" x="60" y="14" width="160" height="40" rx="8"/><text class="t" x="140" y="39" text-anchor="middle">outboxrelay</text>
+        <rect class="box" x="370" y="14" width="160" height="40" rx="8"/><text class="t" x="450" y="39" text-anchor="middle">identity Postgres</text>
+        <rect class="box" x="680" y="14" width="160" height="40" rx="8"/><text class="t" x="760" y="39" text-anchor="middle">RabbitMQ</text>
+        <line class="life" x1="140" y1="54" x2="140" y2="460"/>
+        <line class="life" x1="450" y1="54" x2="450" y2="460"/>
+        <line class="life" x1="760" y1="54" x2="760" y2="460"/>
+      </g>
+      <g id="sq-msgs"></g>
+    </svg>
+    </div>
+    <div class="stepbox" id="sq-box"></div>
+  </div>
+</section>
+
+<section id="retry">
+  <span class="eyebrow">Retry budget</span>
+  <h2>How long before a row is parked</h2>
+  <p class="sub">Delay before the next try is <code>base × 2^attempts</code>, capped at 1 minute (<span class="mono">retry.go</span>). The relay only checks on its 1s tick, so real waits round up. Staging runs the defaults.</p>
+  <div class="panel calc">
+    <div class="ctl">
+      <label for="c-max">MQ_RETRY_MAX_ATTEMPTS <span class="v" id="c-max-v">5</span><input id="c-max" type="range" min="1" max="12" value="5"></label>
+      <label for="c-base">MQ_RETRY_BACKOFF_BASE <span class="v" id="c-base-v">500ms</span><input id="c-base" type="range" min="100" max="5000" step="100" value="500"></label>
+      <button class="btn" id="c-reset">Reset to defaults</button>
+    </div>
+    <div class="out">
+      <div class="bars" id="c-bars"></div>
+      <p class="total" id="c-total"></p>
+    </div>
+  </div>
+</section>
+
+<section id="deploy">
+  <span class="eyebrow">Deployment</span>
+  <h2>How it runs on staging</h2>
+  <p class="sub">infra-gitops <code>apps/identity-svc-outboxrelay</code>, discovered by the <code>apps/*</code> ApplicationSet. Only a <code>staging/proxmox/office</code> overlay exists. Production is planned to launch with identity-svc already in place (H2).</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Setting</th><th>Value</th><th>Where / why</th></tr></thead>
+    <tbody>
+      <tr><td class="k">RUN_MODE</td><td class="num">outboxrelay</td><td>Base ConfigMap. Local compose instead runs <code>api,outboxrelay</code> in one container.</td></tr>
+      <tr><td class="k">MQ_OUTBOX_EXCHANGE</td><td class="num">identity.events</td><td>Topic exchange on vhost <code>events</code>, from rabbitmq-topology (TMS-337, #160).</td></tr>
+      <tr><td class="k">MQ_URL</td><td class="num">amqp://…@rabbitmq.rabbitmq:5672/events</td><td>Credentials come from SOPS secret <code>identity-svc-outboxrelay-mq</code>. The broker user may only write to <code>^identity\.events$</code>; it has no configure or read permission.</td></tr>
+      <tr><td class="k">MQ_OUTBOX_RETENTION</td><td class="num">336h</td><td>Staging keeps published rows for 14 days (default 168h). This window is what makes accepted risk H42 bounded.</td></tr>
+      <tr><td class="k">MQ_OUTBOX_POLL_INTERVAL</td><td class="num">1s</td><td>Default.</td></tr>
+      <tr><td class="k">MQ_OUTBOX_BATCH_SIZE</td><td class="num">100</td><td>Default. One batch per tick, in one transaction.</td></tr>
+      <tr><td class="k">DB_DSN</td><td class="num">secret identity-svc-db-app/dsn</td><td><code>postgres-dsn-patch.yaml</code>. Postgres egress policy admits this pod.</td></tr>
+      <tr><td class="k">DB_MAX_CONNS</td><td class="num">5</td><td>Staging overlay. The advisory lock pins one dedicated connection.</td></tr>
+      <tr><td class="k">DB_TENANT_SCOPE_STRICT</td><td class="num">true</td><td>The relay reads under <code>tenantscope.CrossTenant("events:outbox-relay")</code>.</td></tr>
+      <tr><td class="k">DB_AUTO_MIGRATE</td><td class="num">false</td><td>Migrations run from the api app, never the relay.</td></tr>
+      <tr><td class="k">replicas</td><td class="num">1</td><td>A second replica would be a standby only.</td></tr>
+      <tr><td class="k">resources</td><td class="num">10m / 48Mi → 200m / 128Mi</td><td>Requests → limits. Nonroot 65532, read-only root FS, all capabilities dropped.</td></tr>
+      <tr><td class="k">sync-wave</td><td class="num">2</td><td>After the topology and secrets exist.</td></tr>
+      <tr><td class="k">image</td><td class="num">backend-spark:804550f3</td><td>Bumped only by <code>deploy.yml</code> via <code>kustomize edit set image</code>, together with identity-svc-api (latest: <code>bda6e71</code>).</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="observe">
+  <span class="eyebrow">Observability</span>
+  <h2>What it emits</h2>
+  <div class="cols">
+    <div class="card"><h3>Metrics · meter <code>events</code></h3><ul>
+      <li><code>event_publish_total</code> by routing_key</li>
+      <li><code>event_publish_failed_total</code> by routing_key</li>
+      <li><code>event_publish_infra_failed_total</code></li>
+      <li><code>event_outbox_exhausted_total</code></li>
+      <li><code>event_outbox_pending</code> (gauge)</li>
+      <li><code>event_outbox_oldest_pending_age_seconds</code> (gauge)</li>
+      <li><code>event_outbox_parked</code> (gauge)</li>
+    </ul></div>
+    <div class="card"><h3>Logs</h3><ul>
+      <li><code>outbox relay lease error</code></li>
+      <li><code>outbox relay drain failed</code></li>
+      <li><code>outbox batch abandoned, retry budget preserved</code></li>
+      <li><code>outbox row exhausted, parked undelivered</code></li>
+      <li><code>outbox retention sweep</code></li>
+    </ul></div>
+    <div class="card"><h3>Traces and alerts</h3><ul>
+      <li>No publish span. The traceparent stored at enqueue is forwarded as an AMQP header, so the consumer continues the producer's trace.</li>
+      <li>Runbooks: <code>NaryaOutboxRetriesExhausted</code>, <code>NaryaOutboxStalled</code> in <span class="mono">docs/runbooks/observability.md</span>.</li>
+      <li><code>OTEL_SERVICE_NAME=identity-svc-outboxrelay</code>.</li>
+      <li>Dashboards and alert namespace matchers for identity-svc are still to do (E3-72).</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="gaps">
+  <span class="eyebrow">Gaps</span>
+  <h2>Open items and accepted risks</h2>
+  <div class="gaps">
+    <div class="gap"><span class="sev info">S4</span><div><h3>No producer, message contract or consumer yet</h3><p><code>api/asyncapi.yaml</code> has <code>channels: {}</code> until E3-77 declares <code>identity.audit.recorded</code>. Core's quorum queue, the binding and the DLQ also land in S4. The infra-gitops change must merge and sync before the backend PR (ADR-0123).</p></div></div>
+    <div class="gap"><span class="sev warn">Contract</span><div><h3>Ten actions or eleven?</h3><p>ADR-0123 and E3-44 say the event carries "exactly today's ten action names", but ADR-0122's <code>actor_via</code> table lists eleven, including <code>platform_bootstrap</code>. ADR-0123 lists only "bootstrap reset" as audited. Settle this before E3-77 fixes the <code>action</code> enum: the contract is unversioned and its queues retain messages, so it is hard to change later.</p></div></div>
+    <div class="gap"><span class="sev warn">Order</span><div><h3>An early row would be parked, not held</h3><p>With no queue bound, a <code>mandatory</code> publish is returned, and the row is parked after 5 attempts (about 7.5s). That contradicts the base kustomization comment saying it "stays in the outbox". Parked rows need a manual replay.</p></div></div>
+    <div class="gap"><span class="sev bad">Runbook</span><div><h3>Runbook selector misses this pod</h3><p>The runbook's kubectl commands filter on <code>app.kubernetes.io/component=outboxrelay</code>, but this Deployment sets only <code>app.kubernetes.io/name</code>. Following the runbook as written finds nothing.</p></div></div>
+    <div class="gap"><span class="sev warn">H42</span><div><h3>Broker loss inside the retention window loses audit events</h3><p>Accepted for staging only. Production needs the H12 detector.</p></div></div>
+    <div class="gap"><span class="sev warn">H43</span><div><h3>Restoring only the identity DB drops unpublished rows</h3><p>Accepted risk. <code>identityimport --replace</code> refuses to run while any row is unpublished.</p></div></div>
+    <div class="gap"><span class="sev info">Coupling</span><div><h3>Publish timeout reuses the consumer shutdown grace</h3><p>Each publish waits up to <code>MQ_CONSUMER_SHUTDOWN_GRACE</code> (30s). The code flags this as a coupling.</p></div></div>
+  </div>
+</section>
+
+<footer>
+  <div>Sources: backend-narya <code>origin/main</code> @ 804550f3 (<span class="mono">services/identity-svc</span>, <span class="mono">internal/platform/events</span>, ADR-0119, ADR-0122, ADR-0123, <span class="mono">services/core/internal/audit/audit.go</span>, <span class="mono">docs/requirements/identity-module-3.md</span>) and infra-gitops <code>origin/main</code> (<span class="mono">apps/identity-svc-outboxrelay</span>, <span class="mono">infrastructure/rabbitmq-topology</span>). Tickets TMS-327, TMS-335, TMS-337, TMS-339, TMS-340.</div>
+  <div>Snapshot of 2026-09-28. Plane ticket states were not checked.</div>
+</footer>
+</div>
+
+<script>
+(function(){
+  // topology
+  var topo=document.getElementById('topo'), cap=document.getElementById('topo-cap');
+  var caps={
+    today:'<p><b>Today:</b> both identity-svc apps are live on staging, but nothing writes to <code>event_outbox</code>. The relay wakes every second, takes the lock, finds no rows and releases it. <code>identity.events</code> has no bindings, so any row written now would be returned as unroutable and parked.</p>',
+    s4:'<p><b>After S4:</b> each session insert, revoke, rotate, reset, relink or bootstrap reset writes a full mirror of <code>audit.Record</code> as <code>identity.audit.recorded</code> in the same transaction. The relay publishes it, Core\'s eventhandler consumes it from <code>core.identity.audit.recorded</code> into <code>audit_log</code>, and rejected messages go to <code>core.dlx</code>.</p>'
+  };
+  function setView(v){
+    topo.setAttribute('class',v);
+    document.getElementById('tv-today').setAttribute('aria-pressed',v==='today');
+    document.getElementById('tv-s4').setAttribute('aria-pressed',v==='s4');
+    cap.innerHTML=caps[v];
+  }
+  document.getElementById('tv-today').onclick=function(){setView('today')};
+  document.getElementById('tv-s4').onclick=function(){setView('s4')};
+  setView('today');
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('tv-play').onclick=function(){
+    var dot=document.getElementById('dot'), s4=topo.getAttribute('class')==='s4';
+    var pts=[[100,116],[315,116],[540,116],[755,116],[925,s4?84:116]];
+    if(s4)pts.push([925,245]);
+    if(reduce){dot.setAttribute('cx',pts[pts.length-1][0]);dot.setAttribute('cy',pts[pts.length-1][1]);return}
+    var i=0,t0=null,seg=650;
+    dot.style.fill=getComputedStyle(document.documentElement).getPropertyValue('--accent');
+    function f(ts){
+      if(t0===null)t0=ts;
+      var k=(ts-t0)/seg; i=Math.floor(k);
+      if(i>=pts.length-1){var L=pts[pts.length-1];dot.setAttribute('cx',L[0]);dot.setAttribute('cy',L[1]);
+        if(!s4)dot.style.fill=getComputedStyle(document.documentElement).getPropertyValue('--bad');return}
+      var a=pts[i],b=pts[i+1],u=k-i;
+      dot.setAttribute('cx',a[0]+(b[0]-a[0])*u);dot.setAttribute('cy',a[1]+(b[1]-a[1])*u);
+      requestAnimationFrame(f);
+    }
+    requestAnimationFrame(f);
+  };
+
+  // planned events filter
+  var evBtns=document.querySelectorAll('[data-ev]'), evRows=document.querySelectorAll('#ev-rows tr');
+  function evFilter(k){
+    var n=0;
+    evBtns.forEach(function(b){b.setAttribute('aria-pressed',b.dataset.ev===k)});
+    evRows.forEach(function(r){var on=k==='all'||r.dataset.g===k;r.hidden=!on;if(on)n++});
+    document.getElementById('ev-count').textContent=n+' action'+(n===1?'':'s')+' · one routing key';
+  }
+  evBtns.forEach(function(b){b.onclick=function(){evFilter(b.dataset.ev)}});
+  evFilter('all');
+
+  // lifecycle
+  var ST={
+    pending:{h:'pending',b:'The row committed with the identity change. It becomes due once <code>next_attempt_at &lt;= now()</code>. A partial index covers only unpublished rows.',sql:"INSERT INTO event_outbox (id, aggregate_type, aggregate_id,\n  routing_key, event_kind, payload, trace_parent, ...)\n-- same tx as the identity write\n\nINDEX event_outbox_pending (next_attempt_at, id)\n  WHERE published_at IS NULL",c:'identity-svc/db/migrations/0001_create_event_outbox.sql'},
+    claimed:{h:'claimed',b:'The leader claims up to 100 due rows in id order inside one transaction. <code>SKIP LOCKED</code> keeps a leader handover from double-claiming rows.',sql:"SELECT ... FROM event_outbox\nWHERE published_at IS NULL\n  AND next_attempt_at <= now()\nORDER BY id\nLIMIT $batch\nFOR UPDATE SKIP LOCKED",c:'internal/platform/events/outbox.go:86-96'},
+    published:{h:'published',b:'The broker confirmed the message and did not return it. The row stays in the table, stamped, and the stamp is written on a context that ignores cancellation so a shutdown cannot undo a confirmed publish.',sql:"UPDATE event_outbox\nSET published_at = now(), last_error = NULL\nWHERE id = $1",c:'relay.go:128,183-186 · outbox.go:124-126'},
+    swept:{h:'swept',b:'An hourly sweep, run under the lease, deletes published rows older than the retention window (staging: 336h).',sql:"DELETE FROM event_outbox\nWHERE published_at IS NOT NULL\n  AND published_at < now() - $retention",c:'relay.go:90-93,207-219'},
+    backoff:{h:'backing off',b:'A nack, a return or a publish error. <code>attempts</code> is incremented, the error is kept, and the row sleeps until <code>next_attempt_at</code>.',sql:"UPDATE event_outbox\nSET attempts = attempts + 1,\n    last_error = $err,\n    next_attempt_at = now() + base * 2^attempts  -- cap 1m\nWHERE id = $1",c:'relay.go:163-177 · retry.go:19-28'},
+    parked:{h:'parked',b:'The retry budget is spent. The row is kept with <code>next_attempt_at = infinity</code> so it is never claimed again. It counts toward <code>event_outbox_parked</code> and needs an operator to replay it.',sql:"UPDATE event_outbox\nSET attempts = attempts + 1,\n    last_error = $err,\n    next_attempt_at = 'infinity'\nWHERE id = $1",c:'relay.go:164-171 · outbox.go:153-159'}
+  };
+  var det=document.getElementById('lc-detail'), states=document.querySelectorAll('#lc .state');
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function show(k){
+    var s=ST[k];
+    states.forEach(function(g){g.classList.toggle('sel',g.dataset.st===k)});
+    det.innerHTML='<h3>'+s.h+'</h3><p style="font-size:14.5px">'+s.b+'</p><pre>'+esc(s.sql)+'</pre><div class="cite">'+s.c+'</div>';
+  }
+  states.forEach(function(g){
+    g.addEventListener('click',function(){show(g.dataset.st)});
+    g.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();show(g.dataset.st)}});
+  });
+  show('pending');
+
+  var SC={
+    happy:[['pending','t=0.0s   row committed with session insert',''],['claimed','t≈1s     tick: lock acquired, row claimed',''],['published','         basic.ack, not returned → published_at = now()','ok'],['swept','t+336h   hourly sweep deletes it','mut']],
+    unroutable:[['pending','t=0.0s   row committed',''],['claimed','t≈1s     claimed, published mandatory',''],['backoff','         basic.return: unroutable → attempts=1, +0.5s','warn'],['claimed','t≈2s     retry',''],['backoff','         unroutable → attempts=2, +1s','warn'],['claimed','t≈3s     retry',''],['backoff','         unroutable → attempts=3, +2s','warn'],['claimed','t≈5s     retry',''],['backoff','         unroutable → attempts=4, +4s','warn'],['claimed','t≈9s     5th attempt',''],['parked','         attempts+1 = max → parked undelivered','bad']],
+    outage:[['pending','t=0.0s   row committed',''],['claimed','t≈1s     claimed',''],['backoff','         publish failed (connection) → attempts=1, +0.5s','warn'],['claimed','t≈2s     retry after broker is back',''],['published','         basic.ack → published_at = now()','ok']],
+    shutdown:[['pending','t=0.0s   row committed',''],['claimed','t≈1s     claimed in a batch of 100',''],['pending','         SIGTERM mid-batch: confirmed rows commit, rest roll back unchanged','warn'],['claimed','t≈next   new leader claims it; attempts unchanged',''],['published','         basic.ack → published_at = now()','ok']]
+  };
+  var log=document.getElementById('lc-log'), timer=null;
+  document.querySelectorAll('[data-scn]').forEach(function(b){
+    b.onclick=function(){
+      clearTimeout(timer); log.innerHTML='';
+      var steps=SC[b.dataset.scn], i=0;
+      function step(){
+        states.forEach(function(g){g.classList.remove('lit')});
+        if(i>=steps.length)return;
+        var s=steps[i], g=document.querySelector('#lc .state[data-st="'+s[0]+'"]');
+        g.classList.add('lit');
+        var d=document.createElement('div'); if(s[2])d.className=s[2]; d.textContent=s[1]; log.appendChild(d); log.scrollTop=log.scrollHeight;
+        i++;
+        if(i<steps.length)timer=setTimeout(step,reduce?60:850);
+      }
+      step();
+    };
+  });
+
+  // sequence
+  var L={r:140,p:450,m:760};
+  var MS=[
+    {f:'r',t:'r',y:84,l:'ticker fires (1s)',h:'Ticker fires',b:'The relay loop wakes on <code>MQ_OUTBOX_POLL_INTERVAL</code>. Shutdown is checked first, so a cancelled context ends the loop cleanly.',c:'relay.go:60-66'},
+    {f:'r',t:'p',y:120,l:'pg_try_advisory_lock(0x6f7574626f78)',h:'Try the lease',b:'The relay takes a non-blocking advisory lock on one dedicated connection. The key spells "outbox" in hex. Whoever holds it is the leader for this tick.',c:'locker.go:13,30-50'},
+    {f:'p',t:'r',y:148,l:'true | false',h:'Leader or standby',b:'<code>false</code> means another pod holds the lock: return and try again next tick. A lock error is logged as <code>outbox relay lease error</code>. Release is deferred so a panic cannot leave the lock held on a pooled connection.',c:'relay.go:69-83'},
+    {f:'r',t:'p',y:186,l:'BEGIN; SELECT … FOR UPDATE SKIP LOCKED LIMIT 100',h:'Claim a batch',b:'Due, unpublished rows in id order, claimed in one transaction. An empty result ends the tick.',c:'relay.go:94-107 · outbox.go:86-96'},
+    {f:'r',t:'m',y:230,l:'basic.publish identity.events · mandatory · persistent',h:'Publish each row',b:'The routing key comes from the row. MessageId is the row id, Type is the routing key, AppId is the aggregate type, and the <code>event-kind</code> and <code>traceparent</code> headers are set. A mutex serialises publishes on the confirm channel.',c:'amqp_publisher.go:50-80'},
+    {f:'m',t:'r',y:266,l:'basic.return (if unroutable)',h:'Unroutable check',b:'Because the publish is <code>mandatory</code>, a message no queue accepts is sent back. After the confirm, a non-blocking read of the return channel turns that into a publish error. This is the path every row would take today.',c:'amqp_publisher.go:44-48,96-103'},
+    {f:'m',t:'r',y:298,l:'basic.ack / nack (publisher confirm)',h:'Publisher confirm',b:'The relay waits for the broker\'s confirm, up to <code>MQ_CONSUMER_SHUTDOWN_GRACE</code> (30s). Only an ack without a return counts as published.',c:'relay.go:189-205'},
+    {f:'r',t:'p',y:336,l:'UPDATE published_at | attempts, next_attempt_at',h:'Record the outcome',b:'Success sets <code>published_at</code>. Failure increments attempts and schedules a backoff, or parks the row when the budget is spent. These writes use a context that ignores cancellation, so a confirmed publish is never left unstamped and sent again.',c:'relay.go:112-186'},
+    {f:'r',t:'p',y:370,l:'COMMIT',h:'Commit the batch',b:'Rows confirmed before a shutdown still commit. Unconfirmed rows roll back untouched and keep their retry budget. A drain error is logged and the next tick retries.',c:'relay.go:85-89,152-161'},
+    {f:'r',t:'p',y:406,l:'hourly: DELETE published rows older than retention',h:'Retention sweep',b:'At most once an hour, still holding the lease, published rows older than <code>MQ_OUTBOX_RETENTION</code> are deleted and <code>outbox retention sweep</code> is logged.',c:'relay.go:90-93,207-219'},
+    {f:'r',t:'p',y:442,l:'pg_advisory_unlock',h:'Release the lease',b:'The deferred release unlocks with a detached context, so any pod can lead on the next tick.',c:'locker.go:30-50'}
+  ];
+  var g=document.getElementById('sq-msgs'), NS='http://www.w3.org/2000/svg', els=[];
+  MS.forEach(function(m,i){
+    var gg=document.createElementNS(NS,'g'); gg.setAttribute('class','msg');
+    var x1=L[m.f],x2=L[m.t],p;
+    if(m.f===m.t){p=document.createElementNS(NS,'path');p.setAttribute('d','M'+x1+','+(m.y-8)+' h50 v16 h-46');}
+    else{p=document.createElementNS(NS,'line');p.setAttribute('x1',x1);p.setAttribute('x2',x2+(x2>x1?-4:4));p.setAttribute('y1',m.y);p.setAttribute('y2',m.y);
+      if(m.f==='m'||(m.f==='p'&&m.t==='r'))p.setAttribute('stroke-dasharray','5 4');}
+    p.setAttribute('class','edge');p.setAttribute('marker-end','url(#sa)');
+    var tx=document.createElementNS(NS,'text');
+    tx.setAttribute('class','lbl');tx.setAttribute('font-size','12');
+    if(m.f===m.t){tx.setAttribute('x',x1+60);tx.setAttribute('y',m.y+4);}
+    else{tx.setAttribute('x',(x1+x2)/2);tx.setAttribute('y',m.y-7);tx.setAttribute('text-anchor','middle');}
+    tx.textContent=(i+1)+'. '+m.l;
+    gg.appendChild(p);gg.appendChild(tx);g.appendChild(gg);els.push(gg);
+  });
+  var cur=0, box=document.getElementById('sq-box'), cnt=document.getElementById('sq-count');
+  function render(all){
+    els.forEach(function(e,i){e.classList.toggle('on',all||i<=cur);e.classList.toggle('cur',!all&&i===cur)});
+    var m=MS[cur];
+    box.innerHTML=all?'<h3>The whole tick</h3><p>Steps 4 to 9 run only when this pod is the leader and rows are due. Steps 5 to 8 repeat for each row in the batch.</p>'
+      :'<span class="stepnum">STEP '+(cur+1)+' OF '+MS.length+'</span><h3>'+m.h+'</h3><p>'+m.b+'</p><div class="cite">'+m.c+'</div>';
+    cnt.textContent=all?'all steps':(cur+1)+' / '+MS.length;
+    document.getElementById('sq-prev').disabled=!all&&cur===0;
+    document.getElementById('sq-next').disabled=!all&&cur===MS.length-1;
+  }
+  document.getElementById('sq-prev').onclick=function(){if(cur>0)cur--;render(false)};
+  document.getElementById('sq-next').onclick=function(){if(cur<MS.length-1)cur++;render(false)};
+  document.getElementById('sq-all').onclick=function(){render(true)};
+  document.getElementById('sq').addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'){cur=Math.min(cur+1,MS.length-1);render(false);e.preventDefault()}
+    if(e.key==='ArrowLeft'){cur=Math.max(cur-1,0);render(false);e.preventDefault()}
+  });
+  render(false);
+
+  // calculator
+  var cm=document.getElementById('c-max'), cb=document.getElementById('c-base');
+  function fmt(ms){return ms>=60000?(ms/60000).toFixed(ms%60000?1:0)+'m':ms>=1000?(ms/1000).toFixed(ms%1000?1:0)+'s':ms+'ms'}
+  function calc(){
+    var max=+cm.value, base=+cb.value;
+    document.getElementById('c-max-v').textContent=max;
+    document.getElementById('c-base-v').textContent=fmt(base);
+    var rows=[], total=0;
+    for(var a=0;a<max-1;a++){var d=Math.min(base*Math.pow(2,a),60000);rows.push(d);total+=d}
+    var peak=Math.max.apply(null,rows.concat([1])), h='';
+    rows.forEach(function(d,i){
+      h+='<div class="bar"><span class="n">try '+(i+1)+' fails</span><span class="track"><span class="fill" style="width:'+(d/peak*100).toFixed(1)+'%"></span></span><span class="d">wait '+fmt(d)+'</span></div>';
+    });
+    h+='<div class="bar park"><span class="n">try '+max+' fails</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="d">parked</span></div>';
+    document.getElementById('c-bars').innerHTML=h;
+    document.getElementById('c-total').innerHTML='A row that fails every try is parked after <b>'+max+'</b> publish attempt'+(max>1?'s':'')+' and about <b>'+fmt(total)+'</b> of backoff'+(max>1?' (plus up to 1s of tick latency per retry)':'')+'.';
+  }
+  cm.oninput=calc; cb.oninput=calc;
+  document.getElementById('c-reset').onclick=function(){cm.value=5;cb.value=500;calc()};
+  calc();
+})();
+</script>
+
+</body></html>

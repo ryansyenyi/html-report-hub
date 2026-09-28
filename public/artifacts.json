@@ -5,8 +5,9 @@
       "title": "Identity Module 1 — Completion & Drift Report",
       "description": "Close-out for the Module 1 identity refactor (single sealed Principal): 26/26 requirements traced, TMS-291 done, follow-ups TMS-373–376 open, one open drift gap (D17).",
       "project": "Narya",
-      "category": "Progress",
+      "category": "Identity Module 1",
       "tags": [
+        "progress",
         "identity",
         "authentication",
         "refactor"
@@ -20,8 +21,9 @@
       "title": "Identity Module 2 — Credential Registry Progress Report",
       "description": "Progress on the credential registry / CombinationID resolver: in progress, 18/46 REG items done, ADR-0118 still Proposed.",
       "project": "Narya",
-      "category": "Progress",
+      "category": "Identity Module 2",
       "tags": [
+        "progress",
         "identity",
         "credential-registry",
         "in-progress"
@@ -35,8 +37,9 @@
       "title": "Identity Module 3 Progress",
       "description": "Progress on extracting identity into identity-svc: early stage, 5/33 slices done, gated on Module 2's golden matrix.",
       "project": "Narya",
-      "category": "Progress",
+      "category": "Identity Module 3",
       "tags": [
+        "progress",
         "identity",
         "microservices",
         "early-stage"
@@ -44,6 +47,21 @@
       "path": "artifacts/narya/identity/identity-module-3-report.html",
       "createdAt": "2026-09-26",
       "updatedAt": "2026-09-26"
+    },
+    {
+      "id": "identity-outbox-relay",
+      "title": "Identity Outbox Relay",
+      "description": "Design explainer for the identity-svc outbox relay: why it is needed, where it sits, what it publishes, and how rows are retried and parked.",
+      "project": "Narya",
+      "category": "Identity Module 3",
+      "tags": [
+        "design",
+        "outbox",
+        "identity-svc"
+      ],
+      "path": "artifacts/narya/identity/identity-outbox-relay.html",
+      "createdAt": "2026-09-28",
+      "updatedAt": "2026-09-28"
     }
   ]
 }
