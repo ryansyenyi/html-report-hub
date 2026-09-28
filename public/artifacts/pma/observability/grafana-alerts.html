@@ -193,8 +193,8 @@ main { max-width: 1640px; margin: 0 auto; padding: 16px 20px 60px; }
 .panel-head .hint { color: var(--text-3); font-size: 12px; }
 .panel-body { padding: 14px 16px; }
 
-.stat-grid { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
-@media (max-width: 1500px) { .stat-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.stat-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+@media (max-width: 1500px) { .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .stat {
   text-align: left; cursor: pointer; padding: 12px 14px;
   background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
@@ -4762,7 +4762,6 @@ const DOC_REQUIREMENTS = [
   { key: "doNow",        label: "Do-now steps",            test: a => has(a.doNow) },
   { key: "resolvedWhen", label: "Resolved-when criteria",  test: a => has(a.resolvedWhen) },
   { key: "runbook",      label: "Runbook URL",             test: a => has(a.links?.runbook) },
-  { key: "dashboard",    label: "Linked dashboard",        test: a => has(a.links?.dashboard) },
   { key: "severity",     label: "Severity label",          test: a => SEVERITIES.includes(a.severity) },
   { key: "service",      label: "Service label",           test: a => has(a.service) }
 ];
@@ -5123,7 +5122,6 @@ const OVERVIEW_CARDS = [
   { label: "Enabled", cls: "ok", n: A => A.filter(a => a.enabled).length, go: { status: ["enabled"] }, sub: () => "evaluating" },
   { label: "Paused", cls: "", n: A => A.filter(a => !a.enabled).length, go: { status: ["paused"] }, sub: () => "not evaluated" },
   { label: "Missing runbook", cls: "bad", icon: "alertTri", n: A => A.filter(a => !has(a.links?.runbook)).length, health: "runbook", sub: () => "no runbook_url" },
-  { label: "Missing dashboard", cls: "bad", icon: "alertTri", n: A => A.filter(a => !has(a.links?.dashboard)).length, health: "dashboard", sub: () => "no linked panel" },
   { label: "Incomplete docs", cls: "bad", icon: "alertTri", n: A => A.filter(a => a._doc.status !== "complete").length, go: { doc: ["partial", "missing"] },
     sub: A => `${A.filter(a => a._doc.status === "missing").length} missing · ${A.filter(a => a._doc.status === "partial").length} partial` }
 ];
@@ -5327,7 +5325,6 @@ function viewServices() {
    --------------------------------------------------------------- */
 const HEALTH_CHECKS = [
   { key: "runbook",   title: "Alerts without runbooks",        test: a => !has(a.links?.runbook), why: () => "No runbook_url annotation" },
-  { key: "dashboard", title: "Alerts without dashboards",      test: a => !has(a.links?.dashboard), why: () => "Rule is not linked to a dashboard panel" },
   { key: "description", title: "Alerts without descriptions",  test: a => !has(a.annotations?.description), why: () => "No description annotation — no impact, do-now or resolved-when guidance" },
   { key: "doNow",     title: "Alerts missing first-response guidance", test: a => !has(a.doNow) || !has(a.resolvedWhen),
     why: a => [!has(a.doNow) && "no do-now steps", !has(a.resolvedWhen) && "no resolved-when criteria"].filter(Boolean).join(", ") + (has(a.links?.runbook) ? " (runbook linked)" : "") },
@@ -5339,7 +5336,7 @@ function viewHealth() {
   const list = [...MODEL].sort((a, b) => b._doc.missing.length - a._doc.missing.length || SEV_RANK[a.severity] - SEV_RANK[b.severity] || a.name.localeCompare(b.name));
   const debt = MODEL.reduce((n, a) => n + a._doc.missing.length, 0);
   return `<div class="view-head"><div><h1>Documentation health</h1>
-    <p><b>${debt}</b> missing fields across <b>${MODEL.filter(a => a._doc.missing.length).length}</b> of ${MODEL.length} rules. Only documentation a rule itself can carry is checked (labels, annotations, dashboard link). Status: <b>Complete</b> = all ${DOC_REQUIREMENTS.length} present; <b>Missing</b> = 4+ absent, or both impact and do-now absent; otherwise <b>Partial</b>.</p></div></div>
+    <p><b>${debt}</b> missing fields across <b>${MODEL.filter(a => a._doc.missing.length).length}</b> of ${MODEL.length} rules. Only documentation a rule itself can carry is checked (labels and annotations). Dashboard links are shown where present but not required. Status: <b>Complete</b> = all ${DOC_REQUIREMENTS.length} present; <b>Missing</b> = 4+ absent, or both impact and do-now absent; otherwise <b>Partial</b>.</p></div></div>
 
   <div class="panel" style="margin-bottom:16px">
     <div class="panel-head"><h2>Documentation matrix</h2><span class="hint">✗ = field missing · sorted by most gaps</span></div>
@@ -5374,7 +5371,7 @@ const DRAWER_SECTIONS = [
 ];
 const sectionGap = (a, id) => ({
   overview: !has(a.summary), impact: !has(a.impact), response: !has(a.doNow) || !has(a.resolvedWhen),
-  links: !has(a.links?.runbook) || !has(a.links?.dashboard), docs: a._doc.missing.length > 0
+  links: !has(a.links?.runbook), docs: a._doc.missing.length > 0
 }[id] || false);
 
 function sec(id, num, title, body, extra = "") {
