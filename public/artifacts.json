@@ -93,6 +93,24 @@
       "path": "artifacts/pma/ai-sdlc/ai-sdlc-workflow-report.html",
       "createdAt": "2026-09-28",
       "updatedAt": "2026-09-28"
+    },
+    {
+      "id": "grafana-alert-catalog",
+      "title": "Grafana Alert Catalog — Staging",
+      "description": "Snapshot of the 29 staging Grafana alert rules (backend-narya + infrastructure, exported 28 Sep): severity and coverage overview, filterable rule table, per-rule trigger, queries, lifecycle, runbook links and a documentation-health audit. Owners and notification routing are not in the export and show as gaps.",
+      "project": "PMA",
+      "category": "Observability",
+      "tags": [
+        "grafana",
+        "alerting",
+        "runbook",
+        "observability",
+        "staging",
+        "narya"
+      ],
+      "path": "artifacts/pma/observability/grafana-alerts.html",
+      "createdAt": "2026-09-28",
+      "updatedAt": "2026-09-28"
     }
   ]
 }
