@@ -97,7 +97,7 @@
     {
       "id": "grafana-alert-catalog",
       "title": "Grafana Alert Catalog — Staging",
-      "description": "Snapshot of the 29 staging Grafana alert rules (backend-narya + infrastructure, exported 28 Sep): severity and coverage overview, filterable rule table, per-rule trigger, queries, lifecycle, runbook links and a documentation-health audit. Owners and notification routing are not in the export and show as gaps.",
+      "description": "Snapshot of the 29 staging Grafana alert rules (backend-narya + infrastructure, exported 28 Sep): severity and coverage overview, filterable rule table, per-rule trigger, queries, lifecycle, impact, do-now steps, runbook and dashboard links, and a documentation-health audit. Shows only what the rule export contains.",
       "project": "PMA",
       "category": "Observability",
       "tags": [

@@ -5,9 +5,8 @@
 //
 //   node scripts/import-grafana-alerts.mjs <alert-rules-export.json> [--env staging] [--grafana https://grafana.example]
 //
-// Only what the export contains is carried over. Owners, notification routing and
-// contact points are not part of a rule export, so they stay empty and the report
-// shows them as documentation gaps rather than guessing.
+// Only what the export contains is carried over: owners, notification routing and
+// contact points are not part of a rule export, so the report does not model them.
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -48,7 +47,7 @@ function parseDescription(text) {
   return out
 }
 
-/** "Check a, b; determine c." -> ["Check a, b.", "Determine c."] */
+/** "Check a, b; determine c." -> ["Check a, b.", "Determine c."] (split only; wording is the rule's own). */
 function toSteps(text) {
   if (!text) return []
   return text
@@ -66,11 +65,6 @@ function expressionOf(q) {
   else if (m.type === 'math') Object.assign(e, { expression: m.expression })
   else Object.assign(e, { expression: m.expression })
   return e
-}
-
-function repoFromRunbook(url) {
-  const m = /^(https:\/\/github\.com\/[^/]+\/[^/]+)\//.exec(url || '')
-  return m ? m[1] : ''
 }
 
 function convertRule(rule, group, args) {
@@ -94,14 +88,13 @@ function convertRule(rule, group, args) {
   return {
     id: rule.uid,
     name: rule.title,
-    description: a.summary || '',
-    purpose: desc.impact,
+    summary: a.summary || '',
+    impact: desc.impact,
+    doNow: toSteps(desc.doNow),
+    resolvedWhen: desc.resolvedWhen,
     enabled: !rule.isPaused,
     severity: labels.severity || '',
     service: labels.service || '',
-    component: group.name,
-    environment: args.env,
-    owner: { primary: '', secondary: '', escalation: '' },
     grafana: {
       folder: group.folder,
       group: group.name,
@@ -119,16 +112,7 @@ function convertRule(rule, group, args) {
       noData: rule.noDataState || '',
       execError: rule.execErrState || '',
     },
-    trigger: { humanExplanation: a.summary || '' },
-    notification: {},
-    impact: desc.impact ? { summary: desc.impact } : {},
-    commonCauses: [],
-    immediateChecks: toSteps(desc.doNow),
-    investigationSteps: [],
-    remediationSteps: [],
-    resolvedWhen: desc.resolvedWhen,
-    escalationGuidance: '',
-    links: { dashboard, runbook: a.runbook_url || '', repository: repoFromRunbook(a.runbook_url) },
+    links: { dashboard, runbook: a.runbook_url || '' },
     labels,
     annotations: a,
     raw: { folder: group.folder, group: group.name, interval: group.interval, rule },
@@ -151,7 +135,6 @@ function main() {
     environment: args.env,
     grafanaUrl: args.grafana,
     exportedAt: (stamp ? new Date(Number(stamp[1])) : fs.statSync(args.file).mtime).toISOString(),
-    includesRouting: false,
   }
 
   const block =
