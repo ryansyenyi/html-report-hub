@@ -77,6 +77,22 @@
       "path": "artifacts/narya/identity/identity-svc-database-access.html",
       "createdAt": "2026-09-28",
       "updatedAt": "2026-09-28"
+    },
+    {
+      "id": "ai-sdlc-workflow",
+      "title": "AI SDLC Workflow — Final State",
+      "description": "Where the AI SDLC research landed: the pipeline, durable vs swappable layers, repairing backend-spark rather than rebuilding, monitoring views, and what to measure.",
+      "project": "PMA",
+      "category": "AI SDLC",
+      "tags": [
+        "ai",
+        "sdlc",
+        "workflow",
+        "research"
+      ],
+      "path": "artifacts/pma/ai-sdlc/ai-sdlc-workflow-report.html",
+      "createdAt": "2026-09-28",
+      "updatedAt": "2026-09-28"
     }
   ]
 }
