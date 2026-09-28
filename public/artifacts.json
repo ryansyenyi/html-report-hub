@@ -62,6 +62,21 @@
       "path": "artifacts/narya/identity/identity-outbox-relay.html",
       "createdAt": "2026-09-28",
       "updatedAt": "2026-09-28"
+    },
+    {
+      "id": "identity-svc-database-access",
+      "title": "identity-svc Database Access",
+      "description": "Operator guide for the identity-svc database: who connects and how, staging access routes, a connection builder, the staging secrets, and credential rotation.",
+      "project": "Narya",
+      "category": "Identity Module 3",
+      "tags": [
+        "runbook",
+        "database",
+        "identity-svc"
+      ],
+      "path": "artifacts/narya/identity/identity-svc-database-access.html",
+      "createdAt": "2026-09-28",
+      "updatedAt": "2026-09-28"
     }
   ]
 }

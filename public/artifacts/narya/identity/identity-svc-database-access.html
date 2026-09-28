@@ -1,0 +1,454 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>identity-svc Database Access</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F2F5F4; --surface:#FFFFFF; --surface-2:#E8EEED; --ink:#15212B; --muted:#586874; --rule:#CFD9DB;
+  --accent:#0E6F79; --accent-soft:#D5EBEC; --ok:#2C7A4B; --ok-soft:#DCEFE2; --warn:#A8690F; --warn-soft:#F6E8CF;
+  --bad:#B03A2A; --bad-soft:#F6DDD7; --idle:#9AA8B1;
+  --sans:"Schibsted Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F161C; --surface:#162029; --surface-2:#1C2833; --ink:#E3EAEE; --muted:#93A3AE; --rule:#2B3A46;
+    --accent:#52B8C2; --accent-soft:#16363B; --ok:#62C08A; --ok-soft:#173226; --warn:#E0A54A; --warn-soft:#3A2C14;
+    --bad:#EC7A68; --bad-soft:#3D1F1A; --idle:#5E6E7A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F161C; --surface:#162029; --surface-2:#1C2833; --ink:#E3EAEE; --muted:#93A3AE; --rule:#2B3A46;
+  --accent:#52B8C2; --accent-soft:#16363B; --ok:#62C08A; --ok-soft:#173226; --warn:#E0A54A; --warn-soft:#3A2C14;
+  --bad:#EC7A68; --bad-soft:#3D1F1A; --idle:#5E6E7A;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;padding-inline:20px;padding-block:0 64px}
+.wrap{max-width:1080px;margin:0 auto}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--surface-2);padding:.1em .35em;border-radius:4px;overflow-wrap:anywhere}
+a{color:var(--accent)}
+h1,h2,h3{text-wrap:balance;line-height:1.15;margin:0}
+p{margin:0;max-width:68ch}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+header.hero{padding-block:48px 28px;display:grid;gap:18px;border-bottom:1px solid var(--rule)}
+header.hero h1{font-size:clamp(34px,5.4vw,56px);font-weight:800;letter-spacing:-.02em}
+header.hero h1 .slug{display:block;font-family:var(--mono);font-size:.34em;font-weight:500;letter-spacing:0;color:var(--accent);margin-bottom:10px}
+.lede{font-size:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--mono);font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--rule);background:var(--surface);display:inline-flex;gap:6px;align-items:center}
+.chip i{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--idle)}
+.chip.ok i{background:var(--ok)} .chip.warn i{background:var(--warn)} .chip.bad i{background:var(--bad)} .chip.acc i{background:var(--accent)}
+
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule);margin-inline:-20px;padding:10px 20px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.toc a{font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:6px;white-space:nowrap}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--ink);background:var(--surface-2);outline:none}
+
+section{padding-block:44px 8px;display:grid;gap:18px;scroll-margin-top:56px}
+section>h2{font-size:28px;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--muted)}
+
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.glance div{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:16px;display:grid;gap:6px;align-content:start}
+.glance h3{font-size:15px;font-weight:700}
+.glance p{font-size:14.5px;color:var(--muted)}
+
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--rule);background:var(--surface-2)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button,.btn{font:500 14px var(--sans);color:var(--ink);background:transparent;border:0;padding:7px 12px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.btn{border:1px solid var(--rule);border-radius:8px;background:var(--surface)}
+.btn:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.scroll{overflow-x:auto}
+.scroll svg{display:block;min-width:760px;width:100%;height:auto}
+.caption{padding:14px 16px;border-top:1px solid var(--rule);font-size:15px;display:grid;gap:6px}
+.caption p{max-width:none}
+.cite{font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+svg text{font-family:var(--sans);fill:var(--ink)}
+svg .m{font-family:var(--mono);font-size:11.5px;fill:var(--muted)}
+svg .t{font-size:14px;font-weight:700}
+svg .s{font-size:12px;fill:var(--muted)}
+svg .zl{font-family:var(--mono);font-size:11px;letter-spacing:.08em;fill:var(--muted)}
+svg .zone{fill:none;stroke:var(--rule);stroke-width:1.5;stroke-dasharray:6 5}
+svg .box{fill:var(--surface);stroke:var(--rule);stroke-width:1.5;transition:stroke .2s,fill .2s}
+svg .box.ghost{fill:var(--surface-2);stroke-dasharray:5 4}
+svg .edge{stroke:var(--rule);stroke-width:1.6;fill:none;transition:stroke .2s,opacity .2s}
+svg .lbl{font-size:11.5px;fill:var(--muted)}
+svg .ah{fill:var(--rule)}
+svg .ah.acc{fill:var(--accent)}
+#topo [data-r]{opacity:.35;transition:opacity .2s}
+#topo.r-app [data-r~="app"],#topo.r-import [data-r~="import"],#topo.r-op [data-r~="op"]{opacity:1}
+#topo.r-app [data-r~="app"] .box,#topo.r-import [data-r~="import"] .box,#topo.r-op [data-r~="op"] .box{stroke:var(--accent);stroke-width:2}
+#topo.r-app .edge[data-r~="app"],#topo.r-import .edge[data-r~="import"],#topo.r-op .edge[data-r~="op"]{stroke:var(--accent)}
+#topo .fixed{opacity:1}
+
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:12px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--surface-2)}
+td.k{font-family:var(--mono);font-size:13px;white-space:nowrap}
+td.num{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
+td .cell{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.secret{color:var(--warn)}
+
+.copy{font:500 11px var(--mono);letter-spacing:.04em;color:var(--muted);background:var(--surface);border:1px solid var(--rule);border-radius:5px;padding:3px 8px;cursor:pointer;flex:none}
+.copy:hover{color:var(--ink);border-color:var(--accent)}
+.copy.done{color:var(--ok);border-color:var(--ok)}
+.card,.builder .out,.steps>li>div,.builder .out>div{grid-template-columns:minmax(0,1fr)}
+.cmd{position:relative;min-width:0;max-width:100%}
+.cmd pre{margin:0;font:12.5px/1.5 var(--mono);background:var(--surface-2);border-radius:8px;padding:10px 72px 10px 12px;overflow-x:auto;white-space:pre}
+.cmd .copy{position:absolute;top:8px;right:8px}
+
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:16px;display:grid;gap:10px;align-content:start}
+.card h3{font-size:16px}
+.card p{font-size:14.5px;color:var(--muted)}
+.tag{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:5px;width:max-content}
+.tag.ok{background:var(--ok-soft);color:var(--ok)} .tag.warn{background:var(--warn-soft);color:var(--warn)} .tag.info{background:var(--accent-soft);color:var(--accent)}
+
+.steps{list-style:none;margin:0;padding:16px;display:grid;gap:16px;counter-reset:s}
+.steps>li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;counter-increment:s}
+.steps>li::before{content:counter(s);font:600 13px/30px var(--mono);text-align:center;width:30px;height:30px;border-radius:8px;background:var(--accent-soft);color:var(--accent)}
+.steps>li>div{display:grid;gap:8px;min-width:0}
+.steps p{font-size:15px}
+.hint{font-size:13.5px;color:var(--muted)}
+
+.builder{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr)}
+@media (max-width:760px){.builder{grid-template-columns:1fr}}
+.builder .ctl{padding:16px;display:grid;gap:16px;align-content:start;border-right:1px solid var(--rule)}
+@media (max-width:760px){.builder .ctl{border-right:0;border-bottom:1px solid var(--rule)}}
+.builder label.f{display:grid;gap:6px;font-size:14px;font-weight:600}
+.builder input[type=password],.builder input[type=text]{font:14px var(--mono);padding:8px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+.builder .out{padding:16px;display:grid;gap:14px;min-width:0}
+.builder .out h3{font-size:13px;font-family:var(--mono);font-weight:500;color:var(--muted);margin-bottom:6px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+
+.gaps{display:grid;gap:10px}
+.gap{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:14px 16px}
+.sev{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:5px;height:max-content;white-space:nowrap}
+.sev.warn{background:var(--warn-soft);color:var(--warn)} .sev.bad{background:var(--bad-soft);color:var(--bad)} .sev.info{background:var(--accent-soft);color:var(--accent)}
+.gap h3{font-size:15.5px;margin-bottom:4px}
+.gap p{font-size:14.5px;color:var(--muted)}
+
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--muted);display:grid;gap:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <h1><span class="slug">apps/shared-secrets · identity-svc-db-app</span>identity-svc database access</h1>
+  <p class="lede">identity-svc keeps its data in its own Postgres database, <code>identity_svc</code>. On staging that database sits on the shared <code>staging-postgres</code> server, <code>narya-postgres.staging.pmadvisors.my</code>. The pods reach it through an in-cluster NetBird egress proxy. A laptop that is on NetBird connects to the server directly and never uses the proxy. Both use a SOPS-managed credential. This page records where the database lives, which credentials exist, and how an operator connects. It holds no passwords.</p>
+  <div class="chips">
+    <span class="chip acc"><i></i>staging · proxmox/office</span>
+    <span class="chip"><i></i>db identity_svc</span>
+    <span class="chip"><i></i>2 credentials</span>
+    <span class="chip warn"><i></i>no production overlay</span>
+    <span class="chip bad"><i></i>app password rotation due</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <a href="#glance">At a glance</a><a href="#path">Network path</a><a href="#details">Connection details</a><a href="#password">Get the password</a><a href="#connect">Connect</a><a href="#builder">Builder</a><a href="#creds">Credentials</a><a href="#rotate">Rotation</a><a href="#gaps">Gaps</a>
+</nav>
+
+<section id="glance">
+  <span class="eyebrow">At a glance</span>
+  <h2>What an operator needs to know</h2>
+  <div class="glance">
+    <div><h3>Its own database</h3><p><code>identity_svc</code> is separate from <code>core</code>. identity-svc owns human identity (persons, login identities, sessions, signing keys) under ADR-0119, so its tables are not in Core's schema.</p></div>
+    <div><h3>One app credential</h3><p><code>identity_svc_app_user</code> is shared by the api, its <code>migrate</code> init container and the outbox relay. Every one of them reads <code>DB_DSN</code> from the secret's <code>dsn</code> key.</p></div>
+    <div><h3>Reached through NetBird</h3><p>Pods connect to <code>narya-postgres-egress</code> in the <code>netbird</code> namespace, not to Postgres directly. A NetworkPolicy admits only the identity-svc workloads.</p></div>
+    <div><h3>Laptops skip the proxy</h3><p>From DBeaver or <code>psql</code> on your machine, use host <code>narya-postgres.staging.pmadvisors.my</code>. The <code>…svc.cluster.local</code> name only resolves inside the cluster, so it fails with “Unknown host”.</p></div>
+    <div><h3>Secrets live in SOPS</h3><p>The credential is age-encrypted in infra-gitops, and its twin lives in infra-ansible. Decrypt locally when you need it. Never paste it into a document or an agent session.</p></div>
+  </div>
+</section>
+
+<section id="path">
+  <span class="eyebrow">Network path</span>
+  <h2>Who connects, and how</h2>
+  <p class="sub">Pick a caller to highlight its route to the database.</p>
+  <div class="panel">
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Caller">
+        <button data-route="app" aria-pressed="true">Service pods</button>
+        <button data-route="import" aria-pressed="false">Import job</button>
+        <button data-route="op" aria-pressed="false">Operator</button>
+      </div>
+    </div>
+    <div class="scroll">
+    <svg id="topo" class="r-app" viewBox="0 0 1000 340" role="img" aria-label="Network path from identity-svc pods, the identityimport job and an operator to the staging Postgres server">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0L10,5L0,10z"/></marker>
+      </defs>
+      <rect class="zone" x="10" y="16" width="560" height="244" rx="12"/>
+      <text class="zl" x="26" y="38">TALOS CLUSTER · STAGING</text>
+      <rect class="zone" x="610" y="16" width="380" height="308" rx="12"/>
+      <text class="zl" x="626" y="38">SV3-STG-POSTGRES · CONTAINER staging-postgres</text>
+
+      <g data-r="app"><rect class="box" x="30" y="56" width="200" height="60" rx="10"/>
+        <text class="t" x="44" y="80">identity-svc-api</text><text class="m" x="44" y="100">migrate init + api · ns apps</text></g>
+      <g data-r="app"><rect class="box" x="30" y="128" width="200" height="60" rx="10"/>
+        <text class="t" x="44" y="152">identity-svc-outboxrelay</text><text class="m" x="44" y="172">RUN_MODE=outboxrelay</text></g>
+      <g data-r="import"><rect class="box ghost" x="30" y="200" width="200" height="50" rx="10"/>
+        <text class="t" x="44" y="222">identityimport Job</text><text class="m" x="44" y="240">joins the policy at S2/S8</text></g>
+
+      <g data-r="app import"><rect class="box" x="320" y="110" width="220" height="74" rx="10"/>
+        <text class="t" x="334" y="134">narya-postgres-egress</text><text class="m" x="334" y="154">ns netbird · :5432</text><text class="s" x="334" y="172">policy admits identity-svc only</text></g>
+
+      <g data-r="app op"><rect class="box" x="760" y="60" width="210" height="70" rx="10"/>
+        <text class="t" x="774" y="84">identity_svc</text><text class="m" x="774" y="104">identity_svc_app_user</text><text class="s" x="774" y="120">owner of the app tables</text></g>
+      <g data-r="import op"><rect class="box" x="760" y="160" width="210" height="70" rx="10"/>
+        <text class="t" x="774" y="184">core</text><text class="m" x="774" y="204">identity_svc_import (read)</text><text class="s" x="774" y="220">E3-73 grant list</text></g>
+      <g data-r="op"><rect class="box" x="630" y="254" width="200" height="56" rx="10"/>
+        <text class="t" x="644" y="278">docker exec psql</text><text class="m" x="644" y="296">-U app user or postgres</text></g>
+      <g data-r="op"><rect class="box" x="320" y="276" width="220" height="48" rx="10"/>
+        <text class="t" x="334" y="298">operator</text><text class="m" x="334" y="314">ssh sv3-stg-postgres</text></g>
+
+      <path data-r="app" class="edge" d="M230,86 C 280,86 280,132 318,138" marker-end="url(#a)"/>
+      <path data-r="app" class="edge" d="M230,158 C 270,158 290,152 318,150" marker-end="url(#a)"/>
+      <path data-r="import" class="edge" d="M230,225 C 280,225 290,176 318,170" marker-end="url(#a)"/>
+      <path data-r="app" class="edge" d="M540,135 C 650,135 680,95 758,95" marker-end="url(#a)"/>
+      <path data-r="import" class="edge" d="M540,160 C 650,160 680,195 758,195" marker-end="url(#a)"/>
+      <text data-r="app import" class="lbl" x="612" y="128" text-anchor="middle">NetBird</text>
+      <path data-r="op" class="edge" d="M540,300 H628" marker-end="url(#a)"/>
+      <path data-r="op" class="edge" d="M830,270 C 880,260 880,240 870,232" marker-end="url(#a)"/>
+      <path data-r="op" class="edge" d="M830,262 C 990,240 990,140 972,110" marker-end="url(#a)"/>
+    </svg>
+    </div>
+    <div class="caption" id="path-cap"></div>
+  </div>
+</section>
+
+<section id="details">
+  <span class="eyebrow">Connection details</span>
+  <h2>Host, database and user</h2>
+  <div class="panel">
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Environment">
+        <button data-env="staging" aria-pressed="true">Staging</button>
+        <button data-env="local" aria-pressed="false">Local compose</button>
+      </div>
+      <span class="cite" id="env-src"></span>
+    </div>
+    <div class="scroll" data-envp="staging"><table>
+      <thead><tr><th>Field</th><th>Value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td class="k">host (laptop)</td><td class="num"><div class="cell"><span>narya-postgres.staging.pmadvisors.my</span><button class="copy" data-copy="narya-postgres.staging.pmadvisors.my">Copy</button></div></td><td>Use this in DBeaver or <code>psql</code>. Your machine must be on NetBird. This is the same server your <code>core</code> connection uses.</td></tr>
+        <tr><td class="k">host (pods)</td><td class="num"><div class="cell"><span>narya-postgres-egress.netbird.svc.cluster.local</span><button class="copy" data-copy="narya-postgres-egress.netbird.svc.cluster.local">Copy</button></div></td><td>In-cluster name only. From a laptop it fails with “Unknown host”. Even inside the cluster, the NetworkPolicy lets only identity-svc pods through.</td></tr>
+        <tr><td class="k">port</td><td class="num">5432</td><td></td></tr>
+        <tr><td class="k">dbname</td><td class="num"><div class="cell"><span>identity_svc</span><button class="copy" data-copy="identity_svc">Copy</button></div></td><td></td></tr>
+        <tr><td class="k">user</td><td class="num"><div class="cell"><span>identity_svc_app_user</span><button class="copy" data-copy="identity_svc_app_user">Copy</button></div></td><td>Row-level security applies to this user.</td></tr>
+        <tr><td class="k">password</td><td class="num secret">SOPS only</td><td>See <a href="#password">Get the password</a>.</td></tr>
+        <tr><td class="k">sslmode</td><td class="num">disable</td><td>This is what the pods use, with the NetBird tunnel carrying the link. From a laptop, use the same SSL setting as your working <code>core</code> connection.</td></tr>
+        <tr><td class="k">server</td><td class="num">staging-postgres on sv3-stg-postgres</td><td>Operator access is over SSH to this host.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="scroll" data-envp="local" hidden><table>
+      <thead><tr><th>Field</th><th>Value</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td class="k">host</td><td class="num">localhost</td><td>Use <code>postgres</code> from inside compose.</td></tr>
+        <tr><td class="k">port</td><td class="num">5432</td><td></td></tr>
+        <tr><td class="k">dbname</td><td class="num">identity_svc</td><td>Created by <code>deploy/local/postgres-init.sql</code>.</td></tr>
+        <tr><td class="k">user / password</td><td class="num"><div class="cell"><span>narya / narya</span><button class="copy" data-copy="narya">Copy</button></div></td><td>The compose superuser, shared by every service.</td></tr>
+        <tr><td class="k">DB_DSN</td><td class="num"><div class="cell"><span>postgres://narya:&lt;password&gt;@localhost:5432/identity_svc?sslmode=disable</span><button class="copy" data-copy="postgres://narya:&lt;password&gt;@localhost:5432/identity_svc?sslmode=disable">Copy</button></div></td><td>From <code>.env.identity-svc.example</code>. If unset, the service connects to <code>core</code> by mistake.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="caption" id="env-cap"></div>
+  </div>
+</section>
+
+<section id="password">
+  <span class="eyebrow">Procedure</span>
+  <h2>Get the staging password</h2>
+  <p class="sub">Run these steps in your own terminal. You need the age key at <code>~/.config/sops/age/keys.txt</code>.</p>
+  <div class="panel">
+    <ol class="steps">
+      <li><div>
+        <p>Update infra-gitops. Local checkouts often fall far behind, so read from <code>origin/main</code>.</p>
+        <div class="cmd"><pre>cd ~/projects/pma/infra-gitops &amp;&amp; git fetch origin</pre><button class="copy">Copy</button></div>
+      </div></li>
+      <li><div>
+        <p>Decrypt the secret and print only the password. The <code>data</code> fields are base64.</p>
+        <div class="cmd"><pre>git show origin/main:apps/shared-secrets/staging/proxmox/office/identity-svc-db-app.sops.yaml \
+  | sops -d --input-type yaml --output-type yaml /dev/stdin \
+  | awk '/^  password:/{print $2}' | base64 -d; echo</pre><button class="copy">Copy</button></div>
+        <p class="hint">Don't run this inside an agent session. The secret's <code>dsn</code>, <code>uri</code> and <code>pgpass</code> keys all contain the password too, so decrypting the whole file prints it several times.</p>
+      </div></li>
+      <li><div>
+        <p>Pick a route under <a href="#connect">Connect</a>, or paste the password into the <a href="#builder">builder</a>.</p>
+      </div></li>
+    </ol>
+  </div>
+</section>
+
+<section id="connect">
+  <span class="eyebrow">Connect</span>
+  <h2>Four routes on staging</h2>
+  <div class="cols">
+    <div class="card"><span class="tag ok">Laptop</span><h3>From DBeaver or psql, over NetBird</h3>
+      <p>Connect straight to the server, the same way your <code>core</code> connection does. Use Host <code>narya-postgres.staging.pmadvisors.my</code>, port <code>5432</code>, database <code>identity_svc</code> (not <code>postgres</code>) and user <code>identity_svc_app_user</code>. The egress proxy is only for pods; its <code>svc.cluster.local</code> name gives “Unknown host” outside the cluster.</p>
+      <div class="cmd"><pre>psql -X -h narya-postgres.staging.pmadvisors.my \
+  -p 5432 -U identity_svc_app_user -d identity_svc</pre><button class="copy">Copy</button></div></div>
+    <div class="card"><span class="tag ok">App user</span><h3>On the Postgres host</h3>
+      <p>SSH to <code>sv3-stg-postgres</code>, then connect through the container. You see what the service sees, row-level security included.</p>
+      <div class="cmd"><pre>docker exec -it staging-postgres \
+  psql -X -U identity_svc_app_user -d identity_svc</pre><button class="copy">Copy</button></div></div>
+    <div class="card"><span class="tag warn">Superuser</span><h3>Past row-level security</h3>
+      <p>Use this for audits and counts, where RLS must not hide rows (M3-R53). Print counts, not row data.</p>
+      <div class="cmd"><pre>docker exec -i staging-postgres \
+  psql -X -v ON_ERROR_STOP=1 -U postgres -d identity_svc</pre><button class="copy">Copy</button></div></div>
+    <div class="card"><span class="tag info">In cluster</span><h3>From an identity-svc pod</h3>
+      <p>The egress NetworkPolicy refuses a generic debug pod. Only pods labelled <code>identity-svc-api</code> or <code>identity-svc-outboxrelay</code> get through, and the service image may not include <code>psql</code>.</p>
+      <div class="cmd"><pre>kubectl -n apps exec -it deploy/identity-svc-api -- sh</pre><button class="copy">Copy</button></div></div>
+  </div>
+</section>
+
+<section id="builder">
+  <span class="eyebrow">Tool</span>
+  <h2>Connection builder</h2>
+  <p class="sub">Paste a decrypted password to build ready-to-run strings. The page keeps nothing: the field clears on reload, and nothing is sent anywhere.</p>
+  <form class="panel builder" id="b-form" autocomplete="off">
+    <div class="ctl">
+      <div class="f" style="display:grid;gap:6px;font-size:14px;font-weight:600">Target
+        <div class="seg" role="group" aria-label="Target">
+          <button type="button" data-tgt="staging" aria-pressed="true">Staging</button>
+          <button type="button" data-tgt="local" aria-pressed="false">Local</button>
+        </div>
+      </div>
+      <label class="f" for="b-pass">Password
+        <input type="password" id="b-pass" placeholder="paste decrypted password" spellcheck="false">
+      </label>
+      <div class="row">
+        <button type="button" class="btn" id="b-show">Show</button>
+        <button type="button" class="btn" id="b-clear">Clear</button>
+      </div>
+    </div>
+    <div class="out">
+      <div><h3>dsn: key-value form, the same shape as the secret's dsn key</h3><div class="cmd"><pre id="o-dsn"></pre><button type="button" class="copy" data-target="o-dsn">Copy</button></div></div>
+      <div><h3>uri</h3><div class="cmd"><pre id="o-uri"></pre><button type="button" class="copy" data-target="o-uri">Copy</button></div></div>
+      <div><h3>psql</h3><div class="cmd"><pre id="o-psql"></pre><button type="button" class="copy" data-target="o-psql">Copy</button></div></div>
+    </div>
+  </form>
+</section>
+
+<section id="creds">
+  <span class="eyebrow">Credentials</span>
+  <h2>The two staging secrets</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Secret (ns apps)</th><th>Postgres role</th><th>Grants</th><th>Used by</th><th>Lifetime</th></tr></thead>
+    <tbody>
+      <tr><td class="k">identity-svc-db-app</td><td class="num">identity_svc_app_user</td><td>identity_svc, app tables</td><td>api, migrate init, outboxrelay</td><td>Permanent</td></tr>
+      <tr><td class="k">identity-svc-db-import</td><td class="num">identity_svc_import</td><td>core, read-only under E3-73's grant list</td><td>identityimport Jobs</td><td>Removed at M3 S9</td></tr>
+    </tbody>
+  </table></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Setting</th><th>Value</th><th>Where / why</th></tr></thead>
+    <tbody>
+      <tr><td class="k">DB_DSN</td><td class="num">secretKeyRef identity-svc-db-app/dsn</td><td><code>postgres-dsn-patch.yaml</code> in each identity-svc overlay. A container that opens the database needs its own entry.</td></tr>
+      <tr><td class="k">DB_MAX_CONNS</td><td class="num">5</td><td>Per pod, 1 replica. Counted in the narya-postgres connection budget (E3-53, H3).</td></tr>
+      <tr><td class="k">DB_TENANT_SCOPE_STRICT</td><td class="num">true</td><td>Strict tenant scope on every identity-svc workload (E3-100).</td></tr>
+      <tr><td class="k">NetworkPolicy</td><td class="num">narya-postgres-egress-identity-svc</td><td>Ingress to the egress proxy on :5432 from identity-svc-api and identity-svc-outboxrelay only.</td></tr>
+      <tr><td class="k">secret type</td><td class="num">kubernetes.io/basic-auth</td><td>Keys: username, password, host, port, dbname, dsn, uri, fqdn-uri, jdbc-uri, fqdn-jdbc-uri, pgpass.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="rotate">
+  <span class="eyebrow">Procedure</span>
+  <h2>Rotate a credential</h2>
+  <p class="sub">Each secret's header names its twin. Change infra-ansible first, so Postgres accepts the new password before any pod asks for it.</p>
+  <div class="panel">
+    <ol class="steps">
+      <li><div><p>In infra-ansible, change <code>staging_postgres_identity_svc_app_user_password</code> (or <code>…_identity_svc_import_password</code>) in <code>inventories/prod/internal-tools/staging-postgres/group_vars/staging_postgres.sops.yml</code>, then apply.</p></div></li>
+      <li><div><p>In infra-gitops, update the matching secret under <code>apps/shared-secrets/staging/proxmox/office/</code>. Change every key that embeds the password: <code>password</code>, <code>dsn</code>, <code>uri</code>, <code>fqdn-uri</code>, <code>pgpass</code>. Merge and let ArgoCD sync.</p></div></li>
+      <li><div><p>Restart the identity-svc Deployments so they read the new <code>DB_DSN</code>.</p>
+        <div class="cmd"><pre>kubectl -n apps rollout restart deploy/identity-svc-api deploy/identity-svc-outboxrelay</pre><button class="copy">Copy</button></div></div></li>
+    </ol>
+  </div>
+</section>
+
+<section id="gaps">
+  <span class="eyebrow">Gaps</span>
+  <h2>Open items and caveats</h2>
+  <div class="gaps">
+    <div class="gap"><span class="sev bad">Rotate</span><div><h3>The app password appeared in an agent transcript</h3><p>On 2026-09-28 the <code>identity-svc-db-app</code> password was decrypted inside an agent session, and its <code>dsn</code> and <code>pgpass</code> keys were printed. Rotate it by following the procedure above.</p></div></div>
+    <div class="gap"><span class="sev warn">Access</span><div><h3>No sanctioned in-cluster debug route</h3><p>The egress policy admits only identity-svc workloads, and the service image may not include <code>psql</code>. From outside the cluster, use the laptop route over NetBird or the host route over SSH.</p></div></div>
+    <div class="gap"><span class="sev warn">Pitfall</span><div><h3>“Unknown host” from DBeaver is not an outage</h3><p>On 2026-09-28, a DBeaver connection to <code>narya-postgres-egress.netbird.svc.cluster.local</code> failed with “Unknown host”. The proxy was fine: core's and dms-gateway's <code>/readyz</code>, which ping the database through it, both returned 200. The name simply doesn't exist outside the cluster. That attempt also used database <code>postgres</code> and user <code>identity_svc</code>. Use <code>identity_svc</code> and <code>identity_svc_app_user</code>.</p></div></div>
+    <div class="gap"><span class="sev info">Unverified</span><div><h3>Laptop route not yet tried for identity_svc</h3><p>The direct route to <code>narya-postgres.staging.pmadvisors.my</code> is known to work for <code>core</code>. infra-ansible's staging-postgres README still lists only <code>core</code> and <code>dms_gateway</code>, so if login fails with an auth or “database does not exist” error, check that the <code>identity_svc</code> database and role were created on that server.</p></div></div>
+    <div class="gap"><span class="sev warn">Local</span><div><h3>Older compose volumes lack the database</h3><p>The init SQL runs only on an empty data directory. Either run <code>make compose-down</code> (which passes <code>-v</code>) and then <code>make compose-up</code>, or create the database by hand: <code>docker compose exec postgres psql -U narya -d core -c 'CREATE DATABASE identity_svc;'</code>.</p></div></div>
+    <div class="gap"><span class="sev info">Prod</span><div><h3>No production overlay yet</h3><p>Only <code>staging/proxmox/office</code> exists. Production is planned to launch with identity-svc already in place (H2).</p></div></div>
+    <div class="gap"><span class="sev info">Unverified</span><div><h3>Read from Git, not from the cluster</h3><p>Everything here comes from <code>origin/main</code> manifests. Nothing was checked against the live pods, because there was no kube context.</p></div></div>
+  </div>
+</section>
+
+<footer>
+  <div>Sources: infra-gitops <code>origin/main</code> (<span class="mono">apps/identity-svc-api</span>, <span class="mono">apps/identity-svc-outboxrelay</span>, <span class="mono">apps/shared-secrets/staging/proxmox/office</span>, <span class="mono">networking/narya-postgres-egress</span>) and backend-narya <code>origin/main</code> @ 804550f3 (<span class="mono">docker-compose.yml</span>, <span class="mono">deploy/local/postgres-init.sql</span>, <span class="mono">.env.identity-svc.example</span>, ADR-0119, ADR-0123). Tickets TMS-335, TMS-337, TMS-338.</div>
+  <div>Snapshot of 2026-09-28. Plane ticket states were not checked.</div>
+</footer>
+</div>
+
+<script>
+(function(){
+  function flash(b){b.textContent='Copied';b.classList.add('done');setTimeout(function(){b.textContent='Copy';b.classList.remove('done')},1400)}
+  function sel(el){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r)}
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.copy');if(!b)return;
+    var src=b.dataset.target?document.getElementById(b.dataset.target):b.parentElement.querySelector('pre');
+    var text=b.dataset.copy||(src?src.textContent:'');
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){flash(b)},function(){if(src)sel(src)})}
+    else if(src)sel(src);
+  });
+
+  var topo=document.getElementById('topo'),pcap=document.getElementById('path-cap');
+  var caps={
+    app:'<p><b>Service pods:</b> the api (and its <code>migrate</code> init container) and the outbox relay connect as <code>identity_svc_app_user</code> to <code>narya-postgres-egress</code>. NetBird carries the traffic to <code>staging-postgres</code>, where they use database <code>identity_svc</code>.</p>',
+    import:'<p><b>Import job:</b> <code>identityimport</code> reads Core\'s identity data as <code>identity_svc_import</code>, with read-only grants on <code>core</code> (E3-73). The Job joins the egress policy at its own step (S2/S8), and the credential is removed at M3 S9.</p>',
+    op:'<p><b>Operator:</b> SSH to <code>sv3-stg-postgres</code> and <code>docker exec</code> into <code>staging-postgres</code>. Connect as the app user to see what the service sees, or as <code>postgres</code> so RLS cannot hide rows. From a laptop on NetBird, you can also skip SSH and connect directly to <code>narya-postgres.staging.pmadvisors.my:5432</code>. The in-cluster egress proxy is never on an operator\'s path.</p>'
+  };
+  var rb=document.querySelectorAll('[data-route]');
+  function route(k){topo.setAttribute('class','r-'+k);rb.forEach(function(b){b.setAttribute('aria-pressed',b.dataset.route===k)});pcap.innerHTML=caps[k]}
+  rb.forEach(function(b){b.onclick=function(){route(b.dataset.route)}});
+  route('app');
+
+  var eb=document.querySelectorAll('[data-env]'),ecap=document.getElementById('env-cap'),esrc=document.getElementById('env-src');
+  var ec={
+    staging:['secret apps/identity-svc-db-app','<p>The app pods read all of this from the secret\'s <code>dsn</code> key. The password never appears on this page.</p>'],
+    local:['docker-compose.yml · postgres-init.sql','<p>Run <code>make compose-up</code> first. On a volume created before #526 (TMS-338), the database does not exist yet; see <a href="#gaps">Gaps</a>.</p>']
+  };
+  function env(k){
+    eb.forEach(function(b){b.setAttribute('aria-pressed',b.dataset.env===k)});
+    document.querySelectorAll('[data-envp]').forEach(function(p){p.hidden=p.dataset.envp!==k});
+    esrc.textContent=ec[k][0];ecap.innerHTML=ec[k][1];
+    try{localStorage.setItem('idsvc-env',k)}catch(_){}
+  }
+  eb.forEach(function(b){b.onclick=function(){env(b.dataset.env)}});
+  var saved=null;try{saved=localStorage.getItem('idsvc-env')}catch(_){}
+  env(saved==='local'?'local':'staging');
+
+  var T={staging:{host:'narya-postgres.staging.pmadvisors.my',user:'identity_svc_app_user'},local:{host:'localhost',user:'narya'}};
+  var tgt='staging',pass=document.getElementById('b-pass'),tb=document.querySelectorAll('[data-tgt]');
+  function render(){
+    var t=T[tgt],p=pass.value||(tgt==='local'?'narya':'<password>');
+    document.getElementById('o-dsn').textContent='host='+t.host+' port=5432 user='+t.user+' dbname=identity_svc password='+p+' sslmode=disable';
+    document.getElementById('o-uri').textContent='postgresql://'+t.user+':'+encodeURIComponent(p)+'@'+t.host+':5432/identity_svc?sslmode=disable';
+    document.getElementById('o-psql').textContent="PGPASSWORD='"+p.replace(/'/g,"'\\''")+"' psql -X -h "+t.host+' -p 5432 -U '+t.user+' -d identity_svc';
+  }
+  tb.forEach(function(b){b.onclick=function(){tgt=b.dataset.tgt;tb.forEach(function(x){x.setAttribute('aria-pressed',x===b)});render()}});
+  document.getElementById('b-form').addEventListener('submit',function(e){e.preventDefault()});
+  pass.addEventListener('input',render);
+  document.getElementById('b-show').onclick=function(){var s=pass.type==='password';pass.type=s?'text':'password';this.textContent=s?'Hide':'Show'};
+  document.getElementById('b-clear').onclick=function(){pass.value='';render()};
+  render();
+})();
+</script>
+
+</body></html>
