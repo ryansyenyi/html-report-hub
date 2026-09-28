@@ -270,6 +270,8 @@
 <footer>Single-file report: both diagrams are embedded. Full research with sources: RESEARCH-agentic-sdlc-workflows.md. Diagrams generated with Archify; open them full screen for pan, zoom, search and guided views.</footer>
 
 <script>
+  // Report Hub: sandboxed viewer blocks storage; fall back to in-memory so the rest of the script still runs.
+  const localStorage = (() => { try { const s = window.localStorage; s.getItem("x"); return s; } catch { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => { m.set(k, String(v)); }, removeItem: k => { m.delete(k); } }; } })();
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
