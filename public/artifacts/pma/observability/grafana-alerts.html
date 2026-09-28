@@ -4762,8 +4762,7 @@ const DOC_REQUIREMENTS = [
   { key: "doNow",        label: "Do-now steps",            test: a => has(a.doNow) },
   { key: "resolvedWhen", label: "Resolved-when criteria",  test: a => has(a.resolvedWhen) },
   { key: "runbook",      label: "Runbook URL",             test: a => has(a.links?.runbook) },
-  { key: "severity",     label: "Severity label",          test: a => SEVERITIES.includes(a.severity) },
-  { key: "service",      label: "Service label",           test: a => has(a.service) }
+  { key: "severity",     label: "Severity label",          test: a => SEVERITIES.includes(a.severity) }
 ];
 
 function docStatus(a) {
@@ -5328,7 +5327,6 @@ const HEALTH_CHECKS = [
   { key: "description", title: "Alerts without descriptions",  test: a => !has(a.annotations?.description), why: () => "No description annotation — no impact, do-now or resolved-when guidance" },
   { key: "doNow",     title: "Alerts missing first-response guidance", test: a => !has(a.doNow) || !has(a.resolvedWhen),
     why: a => [!has(a.doNow) && "no do-now steps", !has(a.resolvedWhen) && "no resolved-when criteria"].filter(Boolean).join(", ") + (has(a.links?.runbook) ? " (runbook linked)" : "") },
-  { key: "service",   title: "Alerts without a service label", test: a => !has(a.service), why: () => "Cannot be grouped or routed by service" },
   { key: "severity",  title: "Alerts with unclear severity",   test: a => !!a._sevIssue, why: a => a._sevIssue },
   { key: "paused",    title: "Paused alerts",                  test: a => !a.enabled, why: () => "Not evaluated — confirm it is intentionally off" }
 ];
@@ -5336,7 +5334,7 @@ function viewHealth() {
   const list = [...MODEL].sort((a, b) => b._doc.missing.length - a._doc.missing.length || SEV_RANK[a.severity] - SEV_RANK[b.severity] || a.name.localeCompare(b.name));
   const debt = MODEL.reduce((n, a) => n + a._doc.missing.length, 0);
   return `<div class="view-head"><div><h1>Documentation health</h1>
-    <p><b>${debt}</b> missing fields across <b>${MODEL.filter(a => a._doc.missing.length).length}</b> of ${MODEL.length} rules. Only documentation a rule itself can carry is checked (labels and annotations). Dashboard links are shown where present but not required. Status: <b>Complete</b> = all ${DOC_REQUIREMENTS.length} present; <b>Missing</b> = 4+ absent, or both impact and do-now absent; otherwise <b>Partial</b>.</p></div></div>
+    <p><b>${debt}</b> missing fields across <b>${MODEL.filter(a => a._doc.missing.length).length}</b> of ${MODEL.length} rules. Only documentation a rule itself can carry is checked (annotations and the severity label). Dashboard links and the <code>service</code> label (a routing label in this setup) are shown but not required. Status: <b>Complete</b> = all ${DOC_REQUIREMENTS.length} present; <b>Missing</b> = 4+ absent, or both impact and do-now absent; otherwise <b>Partial</b>.</p></div></div>
 
   <div class="panel" style="margin-bottom:16px">
     <div class="panel-head"><h2>Documentation matrix</h2><span class="hint">✗ = field missing · sorted by most gaps</span></div>
