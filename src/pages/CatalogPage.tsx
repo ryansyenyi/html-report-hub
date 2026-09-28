@@ -3,7 +3,7 @@ import { ArtifactCard } from '../components/ArtifactCard'
 import { Sidebar } from '../components/Sidebar'
 import { StatusMessage } from '../components/StatusMessage'
 import type { Artifact } from '../types/artifact'
-import { EMPTY_FILTERS, filterArtifacts, getFacets, sortArtifacts } from '../utils/filter'
+import { EMPTY_FILTERS, filterArtifacts, getFacets, groupByCategory, sortArtifacts } from '../utils/filter'
 import type { Filters, SortKey } from '../utils/filter'
 import type { CatalogState } from '../utils/useCatalog'
 
@@ -136,6 +136,7 @@ function CatalogResults({ artifacts, filters, onFiltersChange, sort, onSortChang
     () => sortArtifacts(filterArtifacts(artifacts, filters), sort),
     [artifacts, filters, sort],
   )
+  const groups = useMemo(() => groupByCategory(results), [results])
 
   const chips: { label: string; clear: Partial<Filters> }[] = []
   if (filters.query.trim() !== '') chips.push({ label: `Search: “${filters.query.trim()}”`, clear: { query: '' } })
@@ -210,13 +211,26 @@ function CatalogResults({ artifacts, filters, onFiltersChange, sort, onSortChang
             }
           />
         ) : (
-          <ul className="card-grid">
-            {results.map((artifact) => (
-              <li key={artifact.id}>
-                <ArtifactCard artifact={artifact} />
-              </li>
-            ))}
-          </ul>
+          groups.map((group, index) => {
+            const headingId = `category-heading-${index}`
+            return (
+              <section key={group.category} className="card-group" aria-labelledby={headingId}>
+                <div className="card-group-heading">
+                  <h2 id={headingId}>{group.category}</h2>
+                  <span className="card-group-count">
+                    {group.artifacts.length} {group.artifacts.length === 1 ? 'report' : 'reports'}
+                  </span>
+                </div>
+                <ul className="card-grid">
+                  {group.artifacts.map((artifact) => (
+                    <li key={artifact.id}>
+                      <ArtifactCard artifact={artifact} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
+          })
         )}
       </div>
     </main>

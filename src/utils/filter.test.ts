@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Artifact } from '../types/artifact'
-import { EMPTY_FILTERS, filterArtifacts, getFacets, sortArtifacts } from './filter'
+import { EMPTY_FILTERS, filterArtifacts, getFacets, groupByCategory, sortArtifacts } from './filter'
 
 function artifact(overrides: Partial<Artifact>): Artifact {
   return {
@@ -199,5 +199,38 @@ describe('getFacets', () => {
       { value: 'network', count: 1 },
       { value: 'sales', count: 1 },
     ])
+  })
+})
+
+describe('groupByCategory', () => {
+  it('orders groups by category, numerically ("Module 2" before "Module 10")', () => {
+    const module2 = artifact({ id: 'm2', category: 'Module 2' })
+    const module10 = artifact({ id: 'm10', category: 'Module 10' })
+    const module1 = artifact({ id: 'm1', category: 'Module 1' })
+    expect(groupByCategory([module10, module1, module2]).map((g) => g.category)).toEqual([
+      'Module 1',
+      'Module 2',
+      'Module 10',
+    ])
+  })
+
+  it('preserves the input order of artifacts within a group', () => {
+    const second = artifact({ id: 'second', category: 'Security', title: 'B' })
+    const first = artifact({ id: 'first', category: 'Security', title: 'A' })
+    expect(groupByCategory([second, first])).toEqual([
+      { category: 'Security', artifacts: [second, first] },
+    ])
+  })
+
+  it('returns one group per distinct category, in input-derived order otherwise unaffected', () => {
+    const groups = groupByCategory(all)
+    expect(groups).toEqual([
+      { category: 'Finance', artifacts: [salesReport] },
+      { category: 'Security', artifacts: [permissionAudit, networkScan] },
+    ])
+  })
+
+  it('returns an empty array for empty input', () => {
+    expect(groupByCategory([])).toEqual([])
   })
 })

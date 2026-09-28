@@ -8,9 +8,7 @@ export function ArtifactCard({ artifact }: { artifact: Artifact }) {
         {artifact.title}
       </h2>
       <p className="card-desc">{artifact.description}</p>
-      <p className="card-meta">
-        {artifact.project} · {artifact.category}
-      </p>
+      <p className="card-meta">{artifact.project}</p>
       {artifact.tags.length > 0 && (
         <ul className="card-tags" aria-label="Tags">
           {artifact.tags.map((tag) => (

@@ -313,6 +313,33 @@ select {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Card groups ---------- */
+
+.card-group + .card-group {
+  margin-top: 24px;
+}
+
+.card-group-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-group-heading h2 {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.card-group-count {
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Cards ---------- */
 
 .card-grid {

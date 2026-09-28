@@ -68,6 +68,26 @@ export function sortArtifacts(artifacts: Artifact[], key: SortKey): Artifact[] {
   return copy
 }
 
+export interface CategoryGroup {
+  category: string
+  artifacts: Artifact[]
+}
+
+export function groupByCategory(artifacts: Artifact[]): CategoryGroup[] {
+  const groups = new Map<string, Artifact[]>()
+  for (const artifact of artifacts) {
+    const group = groups.get(artifact.category)
+    if (group) {
+      group.push(artifact)
+    } else {
+      groups.set(artifact.category, [artifact])
+    }
+  }
+  return [...groups.entries()]
+    .map(([category, groupArtifacts]) => ({ category, artifacts: groupArtifacts }))
+    .sort((a, b) => a.category.localeCompare(b.category, undefined, { sensitivity: 'base', numeric: true }))
+}
+
 export interface FacetCount {
   value: string
   count: number
