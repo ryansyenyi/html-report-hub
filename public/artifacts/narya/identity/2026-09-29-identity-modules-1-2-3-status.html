@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Narya Identity — Modules 1, 2, 3 status (2026-09-29)</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --purple:#442D4B; --orange:#DF6436; --spark:#EEAA4D; --pink:#EF6D87;
+  --black:#221F20; --offblack:#414141; --offwhite:#F0F0E6; --white:#fff;
+  --done:#2E7D5B; --lag:#5B8C6E; --prog:#DF6436; --todo:#8A8A8A; --blocked:#B3261E; --defer:#6A5ACD;
+  --line:#dcd8cc;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Montserrat,Verdana,Arial,sans-serif;background:var(--offwhite);color:var(--black);line-height:1.5}
+header{background:var(--purple);color:var(--white);padding:28px 40px 0}
+.head-row{display:flex;align-items:center;gap:20px}
+.head-row svg{width:44px;height:auto;flex:none}
+header h1{margin:0;font-size:26px;font-weight:800}
+header p{margin:4px 0 0;color:#e8dcea;font-size:14px}
+nav{display:flex;gap:4px;margin-top:22px;flex-wrap:wrap}
+nav button{background:transparent;border:0;color:#e8dcea;font:600 14px Montserrat,sans-serif;padding:12px 18px;border-radius:10px 10px 0 0;cursor:pointer}
+nav button.active{background:var(--offwhite);color:var(--purple)}
+main{max-width:1200px;margin:0 auto;padding:28px 40px 60px}
+section{display:none}
+section.active{display:block}
+h2{color:var(--purple);font-size:22px;font-weight:800;margin:28px 0 12px}
+h2:first-child{margin-top:0}
+h3{color:var(--purple);font-size:16px;margin:0 0 6px}
+.card{background:var(--white);border-radius:14px;padding:20px 22px;box-shadow:0 1px 3px rgba(68,45,75,.08);margin-bottom:16px}
+.callout{border-left:5px solid var(--orange);background:#fff7f1}
+.callout.purple{border-left-color:var(--purple);background:#f7f2f8}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:8px}
+.kpi{background:var(--white);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(68,45,75,.08);cursor:pointer;border:2px solid transparent}
+.kpi:hover{border-color:var(--spark)}
+.kpi .label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--offblack)}
+.kpi .big{font-size:28px;font-weight:800;color:var(--purple)}
+.kpi .sub{font-size:12.5px;color:var(--offblack)}
+.bar{height:8px;background:#ece8dc;border-radius:5px;overflow:hidden;margin:8px 0 4px;display:flex}
+.bar span{display:block;height:100%}
+.path{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:10px 0 4px}
+.step{border-radius:10px;padding:10px 10px 12px;font-size:12px;color:var(--white);min-height:112px;position:relative;cursor:pointer}
+.step b{display:block;font-size:13px;margin-bottom:4px}
+.step .st{position:absolute;bottom:8px;left:10px;font-weight:700;font-size:11px;text-transform:uppercase;opacity:.95}
+.s-done{background:var(--done)} .s-prog{background:var(--prog)} .s-todo{background:#9b9591} .s-blocked{background:var(--blocked)} .s-defer{background:var(--defer)}
+.you{outline:3px dashed var(--purple);outline-offset:3px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin-top:10px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;color:var(--white);white-space:nowrap}
+.c-done{background:var(--done)} .c-lag{background:var(--lag)} .c-prog{background:var(--prog)} .c-todo{background:var(--todo)} .c-blocked{background:var(--blocked)} .c-defer{background:var(--defer)} .c-na{background:#b9b3a8}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.toolbar input{flex:1;min-width:220px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font:14px Montserrat,sans-serif}
+.toolbar button,.fbtn{font:600 12.5px Montserrat,sans-serif;border:1px solid var(--line);background:var(--white);border-radius:20px;padding:7px 13px;cursor:pointer;color:var(--offblack)}
+.fbtn.on{background:var(--purple);color:var(--white);border-color:var(--purple)}
+details.ws{background:var(--white);border-radius:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(68,45,75,.08);overflow:hidden}
+details.ws>summary{list-style:none;cursor:pointer;padding:16px 20px;display:grid;grid-template-columns:34px 1fr 190px 120px;gap:14px;align-items:center}
+details.ws>summary::-webkit-details-marker{display:none}
+.num{width:30px;height:30px;border-radius:50%;background:var(--purple);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.ws-title{font-weight:700;color:var(--purple)}
+.ws-sub{font-size:12.5px;color:var(--offblack)}
+.ws-body{padding:0 20px 18px}
+.ws-body .why{font-size:13.5px;margin:0 0 10px;color:var(--offblack)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--offblack);border-bottom:2px solid var(--line);padding:8px 8px}
+td{border-bottom:1px solid #eee9dd;padding:8px;vertical-align:top}
+td.id{font-weight:700;color:var(--purple);white-space:nowrap}
+tr.hide{display:none}
+.muted{color:#7b756c;font-size:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.demo-yes{border-left:5px solid var(--done)} .demo-caveat{border-left:5px solid var(--spark)} .demo-no{border-left:5px solid var(--blocked)}
+ul{margin:6px 0;padding-left:20px} li{margin:3px 0}
+.flow{font-family:Consolas,monospace;font-size:12.5px;background:#f6f3ea;border-radius:8px;padding:10px 12px;margin:6px 0;white-space:pre-wrap}
+.sev{font-weight:800;font-size:11px;padding:2px 8px;border-radius:6px;color:#fff}
+.sev.h{background:var(--blocked)} .sev.m{background:var(--orange)} .sev.l{background:var(--todo)}
+footer{font-size:12px;color:var(--offblack);max-width:1200px;margin:0 auto;padding:0 40px 40px}
+@media(max-width:900px){.path{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}details.ws>summary{grid-template-columns:34px 1fr}details.ws>summary .hide-sm{display:none}main,header{padding-left:18px;padding-right:18px}}
+@media print{nav,.toolbar{display:none}section{display:block!important;page-break-before:always}details.ws{break-inside:avoid}details.ws[open] .ws-body,details.ws .ws-body{display:block}}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-row">
+    <svg viewBox="0 0 190.73 218.12" aria-label="PMA"><defs><radialGradient id="rg" cx="188.75" cy="24.98" r="180.91" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fbb746"/><stop offset="1" stop-color="#ef6d87"/></radialGradient></defs><path fill="url(#rg)" d="M80.29,64.11L50.72,0h27.57l17.9,67.78L113.61,0h28.43l-30.66,64.31c-2.85,5.98-8.880,9.78-15.5,9.78h0c-6.7,0-12.79-3.9-15.590-9.98ZM103.98,88.74h0c-3.31,5.73-3.030,12.86.72,18.31l40.37,58.71,14.22-24.62-49.98-48.98,67.64,18.39,13.78-23.88-70.31-6.45c-6.67-.61-13.09,2.71-16.44,8.51ZM87.25,88.43h0c-3.31-5.73-9.62-9.05-16.22-8.53L0,85.5l14.22,24.62,67.41-18.8-49.75,49.39,13.78,23.88,40.74-57.67c3.87-5.47,4.2-12.69.85-18.49Z"/><g fill="#ef6d87"><path d="M33.55,179.63h15.73c9.18,0,14.74,5.44,14.74,13.31v.11c0,8.91-6.93,13.53-15.56,13.53h-6.43v11.55h-8.47v-38.49ZM48.73,199.04c4.23,0,6.71-2.53,6.71-5.83v-.11c0-3.79-2.640-5.83-6.87-5.83h-6.54v11.770h6.71Z"/><path d="M72.3,179.63h4.2c3.06,0,5.91,1.58,7.53,4.18l7.52,12.09,7.52-12.09c1.62-2.6,4.46-4.18,7.53-4.18h4.2v38.49h-8.41v-25.13l-10.830,16.44h-.22l-10.72-16.28v24.96h-8.3v-38.49Z"/><path d="M137.06,179.91h0c-2.33,0-4.44,1.39-5.36,3.54l-14.76,34.67h10.73l9.27-32.62,9.27,32.62h10.94l-14.76-34.67c-.91-2.15-3.02-3.54-5.36-3.54Z"/></g></svg>
+    <div>
+      <h1>Narya Identity: Modules 1, 2 and 3</h1>
+      <p>Where we stand on the road to a live identity service · as of 29 Sep 2026 (backend main <code>5e5f037f</code>)</p>
+    </div>
+  </div>
+  <nav id="tabs">
+    <button data-tab="overview" class="active">Overview</button>
+    <button data-tab="plan">Consolidated plan</button>
+    <button data-tab="modules">By module</button>
+    <button data-tab="demo">Demo readiness</button>
+    <button data-tab="risks">Risks &amp; asks</button>
+  </nav>
+</header>
+
+<main>
+<!-- OVERVIEW -->
+<section id="overview" class="active">
+  <div class="card callout">
+    <h3>The short version</h3>
+    <p style="margin:0">The groundwork is finished. Module 1 gave us one clear idea of "who is calling". Module 2 locked down the front door and added partner integration keys, which operators can already manage from the portal. The new <b>identity service is built and running on staging, but no traffic reaches it yet</b>: every portal login still goes through Core. The next milestones are to switch traffic over, run the staging cut-over with a soak of at least 14 days, and then remove the old identity code from Core. <b>Production has no deployment set up for any service</b>, identity-svc included.</p>
+  </div>
+
+  <h2>Road to the goal</h2>
+  <p class="muted" style="margin-top:-6px">Goal: identity-svc is live, auth and identity have moved out of Core, and the old parts are cleaned up. Click a stage to open it in the plan.</p>
+  <div class="path" id="path"></div>
+  <div class="legend">
+    <span><i style="background:var(--done)"></i>Done</span>
+    <span><i style="background:var(--prog)"></i>In progress</span>
+    <span><i style="background:#9b9591"></i>Not started</span>
+    <span><i style="background:var(--blocked)"></i>Blocked by a gate</span>
+    <span><i style="background:var(--defer)"></i>Deferred (due Dec)</span>
+    <span style="outline:2px dashed var(--purple);padding:0 6px;border-radius:4px">We are here</span>
+  </div>
+
+  <h2>Progress by module</h2>
+  <div class="kpis" id="kpis"></div>
+  <p class="muted">The two bars measure different things. <b>Plane</b> is the ticket state on the board. <b>Code</b> means the work is merged to <code>main</code>. The board is behind the code on 15 tickets across Modules 2 and 3 (see Risks &amp; asks).</p>
+
+  <h2>What changes for a user, and when</h2>
+  <div class="grid2">
+    <div class="card"><h3>Today (staging)</h3>
+      <div class="flow">Browser → Traefik ForwardAuth → <b>Core</b>
+Browser → portal BFF → <b>Core</b> (login, session, password)
+identity-svc: running, no traffic routed to it</div></div>
+    <div class="card"><h3>After the flip (Module 3, S5–S8)</h3>
+      <div class="flow">Browser → Traefik ForwardAuth → <b>identity-svc</b>
+Browser → portal BFF → <b>identity-svc</b> (login, session, password)
+identity-svc → Core: signed assertion (≤30 s), Core keeps authorization</div></div>
+  </div>
+</section>
+
+<!-- PLAN -->
+<section id="plan">
+  <h2>Consolidated plan: Modules 1 + 2 + 3</h2>
+  <p class="muted" style="margin-top:-6px">Eight workstreams in order toward the goal. Expand one to see its sub-tasks. The status shown is what has actually shipped (merged code or a completed deploy). The Plane board state is listed next to it.</p>
+  <div class="toolbar">
+    <input id="q" placeholder="Search tickets, e.g. TMS-346, ForwardAuth, rollback…">
+    <span id="filters"></span>
+    <button id="expand">Expand all</button>
+  </div>
+  <div id="ws"></div>
+</section>
+
+<!-- MODULES -->
+<section id="modules">
+  <h2>Detail by module</h2>
+  <div id="modcards"></div>
+</section>
+
+<!-- DEMO -->
+<section id="demo">
+  <h2>What we can demo, and what we can't yet</h2>
+  <div class="card demo-yes"><h3>Ready to show</h3><ul>
+    <li><b>Partner integration keys, end to end.</b> A Platform Admin issues a key in the portal, lists and revokes it, and each key shows its anchor. The key then reads devices, transactions and catalogue data (TMS-262…269, 400; web-narya #217, #230).</li>
+    <li><b>Front-door hardening, told as a security story.</b> Malformed or smuggled tenant headers are refused. A session header or static admin key at the public edge gets a 401. Default-deny network policy is in place, and alerts fire on authorization signals. Best shown with a few curl calls and the alert rules.</li>
+    <li><b>identity-svc exists and runs on staging.</b> Pods and the outbox relay are healthy, with signing keys and a JWKS endpoint. This is an internal API only, so show it as architecture plus <code>kubectl</code>, not as a user feature.</li>
+  </ul></div>
+  <div class="card demo-caveat"><h3>Show only with a caveat</h3><ul>
+    <li><b>Portal login.</b> It works, but Core still serves it. Say so explicitly. Don't present it as "login now runs on identity-svc".</li>
+    <li><b>The BFF delegate key on every Core call</b> (ADR-0139, #585, merged <b>today</b>). Staging must carry the delegate key on both the BFF and Core, or every portal call fails. Smoke-test staging login before the demo.</li>
+    <li><b>Integration keys on the public edge.</b> The edge rate limits (TMS-265) must be deployed on staging before you call it from outside the cluster.</li>
+  </ul></div>
+  <div class="card demo-no"><h3>Not demo-able yet</h3><ul>
+    <li>Login or sessions served by identity-svc (S5/S6 not started; S5 is gated on H21).</li>
+    <li>Staging cut-over, the soak or rollback drills (S8b–S8g).</li>
+    <li>Core with its identity code removed (S9 has to wait for the cut-over plus a soak of at least 14 days).</li>
+    <li>Anything in production (no prod overlay exists for any service).</li>
+    <li>One key system for partners (TMS-268 is only a plan; legacy tenant keys still exist alongside integration keys).</li>
+  </ul></div>
+  <div class="card callout purple"><h3>Suggested narrative for stakeholders</h3>
+    <p style="margin:0">"We rebuilt the foundations first: one identity model, a hardened front door, and partner keys, which are live on staging with a working admin UI. The new identity service is built and running on staging behind the scenes. Next we move login onto it on staging, watch it for two weeks with a tested rollback, then remove the old code from Core. Production follows once there is a production environment to deploy to."</p>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section id="risks">
+  <h2>Risks and blockers</h2>
+  <div class="card"><table id="risktbl"><thead><tr><th style="width:60px">Level</th><th>Risk</th><th>Impact</th><th>Next step</th></tr></thead><tbody></tbody></table></div>
+  <h2>Decisions and asks for stakeholders</h2>
+  <div class="card"><ol id="asks"></ol></div>
+  <h2>Board clean-up (merged code whose Plane ticket is still open)</h2>
+  <div class="card"><p class="muted" style="margin-top:0">Closing these makes the board match reality before anyone reads it in the meeting.</p><div id="lag"></div></div>
+</section>
+</main>
+
+<footer>
+  <b>Sources:</b> Plane TMS epics TMS-216, TMS-234, TMS-235 and TMS-327 with their children; backend-spark and infra-gitops <code>origin/main</code>; merged PRs in backend-spark, web-narya and infra-gitops.
+  <b>Caveats:</b> The Plane connection hit a rate limit during collection, so some child titles come from commit and PR subjects. Module 3's child list comes from a scan of the newest ~200 TMS items. Generated 29 Sep 2026.
+</footer>
+
+<script>
+// status: done | lag (merged, Plane still open) | prog | todo | blocked | defer | na
+const L = {done:'Done',lag:'Done in code',prog:'In progress',todo:'Not started',blocked:'Blocked',defer:'Deferred',na:'Unknown'};
+const W = [
+ {n:1,mod:'M1',title:'One identity model: "who is calling"',sub:'Module 1 · TMS-216 · Epic Done',state:'done',
+  why:'Every request now carries one sealed Principal (who), and authorization (what they may do) is derived from it. This split is what lets identity move to its own service later without rewriting authorization.',
+  items:[
+   ['TMS-217','S0 · sealed Principal contract (ADR-0113)','done','Done','#405, #398, #399'],
+   ['TMS-218','S1 · session Principal, authz derivation','done','Done','#411'],
+   ['TMS-219/220','S2+S3 · key Principal and KeyAuthority','done','Done','#446'],
+   ['TMS-221','S4 · Core reads identity through identity/authz','done','Done','#451'],
+   ['TMS-222','S5 · delete the session projection and legacy accessors','done','Done','#455'],
+   ['TMS-286/287','FU · dms-gateway reads the sealed Principal','done','Done','#461'],
+   ['TMS-288/289/292/293','FU · e2e guard, legacy Guard collapse, enrollment scope, audit refuses a record with no actor','done','Done','#462, #458, #459, #457'],
+   ['TMS-290','FU · thread the tenant key row id through KeyRef','done','Done','Closed by ADR-0113 §7.1'],
+   ['TMS-291','FU · one route-table capability accessor','done','Done','#476 (was blocked on TMS-236, now merged)'],
+   ['TMS-323','FU · ingress smoke reason confirmed in Grafana','done','Done','Loki evidence'],
+   ['TMS-373','FU · ban rbac.GrantedTo/GrantableAt at handler sites; resolve import aliases in the conformance test','todo','Backlog','Code hygiene, not visible to users'],
+   ['TMS-374','FU · collapse 11 package-local refuseUnlessDecided copies into one authz helper','todo','Backlog','Code hygiene, not visible to users'],
+   ['TMS-375','FU · tenant test fake duplicates the repository permission check','todo','Backlog','Test hygiene'],
+   ['TMS-376','FU · dedicated no-gate 500 test for vendors.grantTenant','todo','Backlog','Test hygiene'],
+  ]},
+ {n:2,mod:'M2a',title:'Hardened front door: credential registry and edge',sub:'Module 2a · TMS-234 · Epic In Progress',state:'lag',
+  why:'One registry decides which credential a request carries, before any handler runs. The edge strips or refuses anything smuggled. Everything needed for the demo is merged; only two items due in December remain.',
+  items:[
+   ['TMS-140','One route table drives mounting and conformance','done','Done','#446'],
+   ['TMS-236','Credential registry: resolver, admission, ForwardAuth gate (ADR-0118)','done','Done','#422, #500'],
+   ['TMS-237','Malformed tenant header refused, golden matrix','done','Done','#486, #481 +'],
+   ['TMS-238/239','Keyed routes in the matrix, key-collision guards','done','Done','#491, #492, #489'],
+   ['TMS-240/241/242/243','BFF request integrity, CSRF authority, one credential combination per request, stable 401','done','Done','#421, #514, #557, #515'],
+   ['TMS-244/246/248/250/256','Edge: ForwardAuth allow-lists, header strips, NetBird via Traefik, default-deny NetworkPolicy, catch-all removed','done','Done','infra-gitops #152, #153, #158, #177, #148, #154, #172, #173'],
+   ['TMS-251/252/253','REG-30 checks, credential redaction, deploy attestation','done','Done','gitops #165, #156; #550 (withdrawn by ADR-0137)'],
+   ['TMS-254/259/325/326','Caller search, alerts on authz signals, matrix through mount.New, boot refuses reserved key format','done','Done','#516, #481, #518, #489'],
+   ['TMS-255','Session headers and static admin key refused at the public edge','lag','In Progress','#531, #564 merged: close the ticket'],
+   ['TMS-257','BFF sends its delegate key on every Core call (ADR-0139)','lag','In Progress','#569…#585 merged. #585 merged today; confirm on staging'],
+   ['TMS-260','Close the table: build check, rollback runbook, REG-45 audit','lag','In Progress','#585 merged; REG-45 audit status unknown'],
+   ['TMS-258','mTLS / workload-identity decision and plan','done','Done','Plan only'],
+   ['TMS-274','NetBird membership export and owner attestation','defer','Backlog','Due 2026-12-20'],
+   ['TMS-275','Implement the mTLS plan (in-cluster mutual auth)','defer','Backlog','Due 2026-12-20'],
+  ]},
+ {n:3,mod:'M2b',title:'Partner integration keys and operator UI',sub:'Module 2b/2c · TMS-235 · Epic In Progress',state:'lag',
+  why:'Partners get their own scoped, rotatable keys instead of shared tenant keys, and platform operators manage them in the portal. All code is merged. Two tickets only need closing.',
+  items:[
+   ['TMS-261','ADR, integration_keys table, anchor integrity','done','Done','#482'],
+   ['TMS-262','Issue a key (Platform Admin, capped at the issuer\'s access)','done','Done','#485'],
+   ['TMS-263/267','Authenticate on the integration prefix; device, transaction and catalogue reads','done','Done','#510, #511'],
+   ['TMS-264/266','Bounded last_used_at; list, rotate, revoke, audit, BFF relay','done','Done','#487, #488'],
+   ['TMS-265','Rate limits, then public exposure (ADR-0129/0132)','lag','In Progress','#520, #533, #564 merged. Confirm on staging'],
+   ['TMS-269','2c operator UI: issue, list, revoke','done','Done','web-narya #217'],
+   ['TMS-400','Keys list shows each key\'s anchor','lag','In Progress','web-narya #230 merged 09-27'],
+   ['TMS-268','Converge legacy tenant keys onto integration keys','prog','Done (plan)','#509 is the plan only; convergence not built'],
+  ]},
+ {n:4,mod:'M3',title:'Build identity-svc (runs dark on staging)',sub:'Module 3 · TMS-327 S0–S4, S10',state:'lag',
+  why:'The new service owns persons, logins, sessions, passwords and signing keys, with its own database. It is built and deployed to staging, and Core can already verify its signed assertions. Nothing sends it traffic yet.',
+  items:[
+   ['TMS-330/331','S0 · ADRs A–F proposed, guide, traceability','done','Done','#478, #479'],
+   ['TMS-332/333/334','P1–P3 · prep refactors (auth route split, 503 opt-in, shared credential package)','done','Done','#480, #483, #524'],
+   ['TMS-335','S1a · service scaffold','done','Done','#490'],
+   ['TMS-337','S1b · dark deploy to staging','lag','In Progress','#497; gitops #179, #170. Running, 1 replica'],
+   ['TMS-336/338','S2 · data fields, schema, identityimport dry run','lag','In Progress','#525, #526; dry-run Job ran on staging'],
+   ['TMS-339','S3a · signing keys, JWKS, mint/verify','lag','In Progress','#527, #554, #559. H21 checklist in #554 not yet signed'],
+   ['TMS-340','S3b · Core accepts signed assertions','lag','In Progress','#539, #556. Nothing sends them yet'],
+   ['TMS-341/342/343','S4a–c · service-to-service auth, session routes, admin write routes','lag','In Progress','#549, #563, #574'],
+   ['TMS-344','S4d · audit path into audit_log','done','Done','#582; gitops #184'],
+   ['TMS-345','S4e · bootstrap split and identityreconcile','lag','In Progress','#581 merged 09-29'],
+   ['TMS-360','S10a · portal never signs out on an outage, incl. cold load','done','Done','web-narya #220'],
+   ['TMS-361','S10b · minimal delegation chain','lag','In Progress','#579'],
+   ['TMS-423/443','Migration backfill label; password race flake','done','Done','#552, #580'],
+   ['TMS-457','E3-104 · TTL 503 flake on CI','todo','Backlog','Undiagnosed'],
+   ['TMS-362','S10c · D2 risk review','todo','Backlog',''],
+  ]},
+ {n:5,mod:'M3',title:'Switch traffic to identity-svc (the flip)',sub:'Module 3 · S5, S6a–c, S6, S7',state:'blocked',
+  why:'This is where users start logging in through identity-svc: Traefik ForwardAuth and the BFF point at it, and Core stops handling login and session. It cannot start until H21 is signed, and the epic also lists the TMS-237 golden matrix as a gate.',
+  items:[
+   ['H21','Sign-off gate before the minter wiring (S5) merges','blocked','n/a','Checklist in #554, unsigned'],
+   ['TMS-346','S5 · ForwardAuth and edge CSRF on identity-svc','blocked','Backlog','ForwardAuth listener exists but serves no routes'],
+   ['TMS-347','S6a · BFF relay rewritten to call identity-svc','todo','Backlog','BFF talks only to Core today'],
+   ['TMS-348','S6b · Core switch for admin writes and revocation','todo','Backlog','Relink and reset-password still local in Core'],
+   ['TMS-349','S6c · Core bootstrap half and local dev path','todo','Backlog',''],
+   ['TMS-350','S6 · integrate and verify the flip PR','todo','Backlog','Branch m3-flip is empty'],
+   ['TMS-351','S7 · edge prep and alerts','todo','Backlog',''],
+   ['config','Core staging config: IDENTITY_* and internal S2S keys','todo','No ticket found','Not present in core-api staging overlay'],
+  ]},
+ {n:6,mod:'M3',title:'Staging cut-over, soak and rollback proof',sub:'Module 3 · S8a–S8g',state:'prog',
+  why:'Data moves once (a single flip that revokes every session), followed by a soak of at least 14 days with a tested rollback and a restore drill. Sign-off on S8g is what allows the cleanup.',
+  items:[
+   ['TMS-352','S8a · flip scripts 1, 2, 6, 8','done','Done','#578'],
+   ['TMS-353','S8b · script 5 and the delta report','todo','Backlog','Next in line'],
+   ['TMS-354','S8c · scripts 3, 4, 7, 9 and the purge','todo','Backlog',''],
+   ['TMS-355','S8d · DR runbooks and cut-over Jobs','todo','Backlog','Next in line'],
+   ['TMS-356','S8e · load test and rollback drill','todo','Backlog','Watch staging CPU (see Risks)'],
+   ['TMS-357','S8f · cut-over F1–F6 on staging','todo','Backlog',''],
+   ['TMS-358','S8g · soak (≥14 days), restore drill, sign-off','todo','Backlog','Takes at least 14 calendar days'],
+  ]},
+ {n:7,mod:'M3',title:'Clean up Core (retire its identity code)',sub:'Module 3 · S9',state:'todo',
+  why:'Once the soak is signed off, Core keeps only authorization. It must hold no password hash, token hash or CSRF secret.',
+  items:[
+   ['TMS-359','S9 · drop the Core identity tables (sessions, login_identities, persons credential columns)','todo','Backlog','Needs S8g sign-off'],
+   ['S9','Remove Core auth handlers: sign-in, sign-out, password, me, accounts, activate, forward-auth, CSRF, authstore','todo','Backlog',''],
+   ['S6b/S9','Remove session and login writes from access, auth, platformaccount and tenant queries','todo','Backlog',''],
+   ['S9','Remove argon2 hashing and the identityimport mode','todo','Backlog',''],
+   ['S9','Remove the BFF\'s X-Narya-Session resolution','todo','Backlog',''],
+   ['DoD','identityreconcile exits 0 after S9; ADRs 0119, 0123 and 0124 Accepted','todo','n/a','Currently Proposed'],
+  ]},
+ {n:8,mod:'—',title:'Production go-live',sub:'Not tracked under Modules 1–3',state:'todo',
+  why:'The goal says "identity service is live". Today "live" can only mean staging: infra-gitops has no production overlay for identity-svc or any other service.',
+  items:[
+   ['—','Production overlays for core, BFF, dms-gateway and identity-svc','todo','No ticket found','Needs an owner and a ticket'],
+   ['—','Production capacity sizing for identity-svc (argon2 CPU)','todo','No ticket found','E3-30 planned a 2-CPU limit'],
+   ['TMS-274/275','In-cluster mTLS and NetBird attestation','defer','Backlog','Due 2026-12-20'],
+  ]},
+];
+const PATH = [
+  ['Module 1','One identity model','done',1],
+  ['Module 2a','Hardened front door','done',2],
+  ['Module 2b/c','Partner keys + UI','done',3],
+  ['M3 build','identity-svc on staging (dark)','done',4],
+  ['M3 flip','Traffic moves to identity-svc','blocked',5,true],
+  ['M3 cut-over','Staging flip + 14-day soak','todo',6],
+  ['M3 cleanup','Remove identity from Core','todo',7],
+  ['Production','Go live','todo',8],
+];
+const MODS = [
+  {k:'M1',name:'Module 1 — One Principal',epic:'TMS-216',plane:[15,19],code:[15,19],note:'Build complete, epic closed 2026-09-25. The four open follow-ups (TMS-373…376) are code and test hygiene spun out of TMS-291; none affects users or the demo.',ws:[1]},
+  {k:'M2a',name:'Module 2a — Credential registry and route collapse',epic:'TMS-234',plane:[22,27],code:[25,27],note:'All code merged. Three tickets only need closing. The remaining two (NetBird attestation, mTLS) are due 2026-12-20. Two duplicate tickets were cancelled and are excluded.',ws:[2]},
+  {k:'M2b',name:'Module 2b/2c — Integration keys and operator UI',epic:'TMS-235',plane:[8,10],code:[10,10],note:'Backend and portal UI merged. Converging legacy tenant keys (TMS-268) is planned but not built.',ws:[3]},
+  {k:'M3',name:'Module 3 — Extract identity into identity-svc',epic:'TMS-327',plane:[11,36],code:[21,36],note:'Build phase done and deployed dark on staging. Flip, cut-over and cleanup not started. Epic still in Backlog on the board.',ws:[4,5,6,7]},
+];
+const RISKS = [
+  ['h','The demo could imply "login runs on identity-svc", which it does not','Stakeholders take away a wrong expectation','Use the narrative on the Demo tab; show identity-svc as running dark'],
+  ['h','#585 (BFF delegate key on every Core call) merged today','If staging lacks the key on the BFF or Core, every portal call fails during the demo','Confirm the deployed tag and the delegate-key secret, then smoke-test login'],
+  ['h','H21 sign-off is unsigned and gates S5, the start of the flip','The whole flip, cut-over and cleanup chain waits on it','Name the signer and set a date'],
+  ['m','Cleanup (S9) needs a staging soak of at least 14 days after cut-over','The earliest cleanup date is cut-over + 14 days + drills','Set expectations on the timeline, not on effort'],
+  ['m','Staging runs on one node (1950m CPU allocatable); identity-svc caused a CPU-starvation incident on 09-28','Real argon2 login load after the flip may starve the node again','Size capacity before S8e; the fix cut the request to 10m with 1 replica'],
+  ['m','No production overlay exists for any service','"Live" means staging only','Agree on a production target and owner'],
+  ['m','Plane lags the code on 15 tickets','The board under-reports progress in the meeting','Close the tickets listed below'],
+  ['l','TMS-457 TTL 503 flake on CI, undiagnosed','Slows merges on the flip branch','Diagnose before S6'],
+  ['l','Legacy tenant keys still sit alongside integration keys (TMS-268 is plan only)','Two partner-key systems remain','Schedule the convergence after the flip'],
+  ['l','In-cluster callers are not mutually authenticated (mTLS, due 2026-12-20)','Accepted until December per the plan','Track TMS-274/275'],
+];
+const ASKS = [
+  'Sign off <b>H21</b> so S5 can merge. It unblocks the whole flip.',
+  'Agree on what the demo claims: <b>partner keys and a hardened front door are live on staging</b>, and identity-svc is built and running dark. The login migration comes next.',
+  'Accept that <b>Core cleanup comes after a staging soak of at least 14 days</b> following cut-over. This is a deliberate safety window, not slack.',
+  'Name an owner and timeline for <b>production environments</b>. None exist yet for any service.',
+  'Confirm the <b>staging capacity</b> budget for identity-svc before the load test (S8e).',
+];
+
+const $=s=>document.querySelector(s);
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+function show(t){document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===t));scrollTo(0,0)}
+const cls={done:'s-done',lag:'s-done',prog:'s-prog',todo:'s-todo',blocked:'s-blocked',defer:'s-defer'};
+$('#path').innerHTML=PATH.map(p=>`<div class="step ${cls[p[2]]} ${p[4]?'you':''}" data-ws="${p[3]}"><b>${p[0]}</b>${p[1]}<span class="st">${L[p[2]]}</span></div>`).join('');
+document.querySelectorAll('.step').forEach(s=>s.onclick=()=>openWs(+s.dataset.ws));
+function bar(a,b,c){return `<div class="bar"><span style="width:${a/b*100}%;background:${c}"></span></div>`}
+$('#kpis').innerHTML=MODS.map(m=>`<div class="kpi" data-ws="${m.ws[0]}"><div class="label">${m.k} · ${m.epic}</div><div class="big">${m.code[0]}/${m.code[1]}</div><div class="sub">merged in code</div>${bar(m.code[0],m.code[1],'var(--done)')}<div class="sub">Plane: ${m.plane[0]}/${m.plane[1]} Done</div>${bar(m.plane[0],m.plane[1],'var(--purple)')}</div>`).join('');
+document.querySelectorAll('.kpi').forEach(k=>k.onclick=()=>openWs(+k.dataset.ws));
+function openWs(n){show('plan');const d=document.getElementById('ws'+n);d.open=true;d.scrollIntoView({behavior:'smooth'})}
+function counts(it){const c={};it.forEach(r=>c[r[2]]=(c[r[2]]||0)+1);return c}
+function segBar(it){const c=counts(it),t=it.length,col={done:'var(--done)',lag:'var(--lag)',prog:'var(--prog)',todo:'#c9c3b8',blocked:'var(--blocked)',defer:'var(--defer)'};return `<div class="bar">${Object.keys(col).map(k=>c[k]?`<span title="${L[k]}: ${c[k]}" style="width:${c[k]/t*100}%;background:${col[k]}"></span>`:'').join('')}</div><div class="muted">${(c.done||0)+(c.lag||0)} of ${t} sub-tasks shipped</div>`}
+const chip=s=>`<span class="chip c-${s}">${L[s]}</span>`;
+$('#ws').innerHTML=W.map(w=>`<details class="ws" id="ws${w.n}"><summary><div class="num">${w.n}</div><div><div class="ws-title">${w.title}</div><div class="ws-sub">${w.sub}</div></div><div class="hide-sm">${segBar(w.items)}</div><div class="hide-sm">${chip(w.state)}</div></summary><div class="ws-body"><p class="why">${w.why}</p><table><thead><tr><th>Ticket</th><th>Sub-task</th><th>Status</th><th>Plane</th><th>Evidence / notes</th></tr></thead><tbody>${w.items.map(r=>`<tr data-s="${r[2]}"><td class="id">${r[0]}</td><td>${r[1]}</td><td>${chip(r[2])}</td><td class="muted">${r[3]}</td><td class="muted">${r[4]}</td></tr>`).join('')}</tbody></table></div></details>`).join('');
+let active=new Set();
+$('#filters').innerHTML=Object.keys(L).filter(k=>k!=='na').map(k=>`<button class="fbtn" data-f="${k}">${L[k]}</button>`).join(' ');
+document.querySelectorAll('.fbtn').forEach(b=>b.onclick=()=>{active.has(b.dataset.f)?active.delete(b.dataset.f):active.add(b.dataset.f);b.classList.toggle('on');filter()});
+$('#q').oninput=filter;
+function filter(){const q=$('#q').value.toLowerCase();document.querySelectorAll('details.ws').forEach(d=>{let any=false;d.querySelectorAll('tbody tr').forEach(tr=>{const ok=(!active.size||active.has(tr.dataset.s))&&(!q||tr.textContent.toLowerCase().includes(q));tr.classList.toggle('hide',!ok);any=any||ok});d.style.display=any?'':'none';if((q||active.size)&&any)d.open=true})}
+let ex=false;$('#expand').onclick=()=>{ex=!ex;document.querySelectorAll('details.ws').forEach(d=>d.open=ex);$('#expand').textContent=ex?'Collapse all':'Expand all'};
+$('#modcards').innerHTML=MODS.map(m=>{const items=m.ws.flatMap(n=>W[n-1].items);return `<div class="card"><h3>${m.name} <span class="muted">(${m.epic})</span></h3><p style="margin:4px 0 8px">${m.note}</p><div class="grid2"><div><div class="muted">Merged in code: ${m.code[0]}/${m.code[1]}</div>${bar(m.code[0],m.code[1],'var(--done)')}</div><div><div class="muted">Plane Done: ${m.plane[0]}/${m.plane[1]}</div>${bar(m.plane[0],m.plane[1],'var(--purple)')}</div></div><p class="muted">Workstreams: ${m.ws.map(n=>`<a href="#" onclick="openWs(${n});return false">${n}. ${W[n-1].title}</a>`).join(' · ')}</p><details><summary style="cursor:pointer;font-weight:600;color:var(--purple)">Sub-tasks (${items.length})</summary><table><tbody>${items.map(r=>`<tr><td class="id">${r[0]}</td><td>${r[1]}</td><td>${chip(r[2])}</td><td class="muted">${r[4]}</td></tr>`).join('')}</tbody></table></details></div>`}).join('');
+$('#risktbl tbody').innerHTML=RISKS.map(r=>`<tr><td><span class="sev ${r[0]}">${{h:'HIGH',m:'MED',l:'LOW'}[r[0]]}</span></td><td>${r[1]}</td><td class="muted">${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+$('#asks').innerHTML=ASKS.map(a=>`<li>${a}</li>`).join('');
+const lag=W.flatMap(w=>w.items.filter(r=>r[2]==='lag').map(r=>[r[0],r[1],r[4]]));
+$('#lag').innerHTML=`<table><tbody>${lag.map(r=>`<tr><td class="id">${r[0]}</td><td>${r[1]}</td><td class="muted">${r[2]}</td></tr>`).join('')}</tbody></table>`;
+</script>
+</body>
+</html>

@@ -111,6 +111,22 @@
       "path": "artifacts/pma/observability/grafana-alerts.html",
       "createdAt": "2026-09-28",
       "updatedAt": "2026-09-28"
+    },
+    {
+      "id": "identity-modules-1-2-3-status",
+      "title": "Narya Identity — Modules 1, 2, 3 Status",
+      "description": "Where the identity work stands on 29 Sep: Modules 1 and 2 shipped, identity-svc built and running dark on staging, the flip blocked on H21 sign-off; consolidated plan, per-module progress (code vs Plane), demo readiness, risks and stakeholder asks.",
+      "project": "Narya",
+      "category": "Identity Modules 1–3",
+      "tags": [
+        "progress",
+        "identity",
+        "status",
+        "roadmap"
+      ],
+      "path": "artifacts/narya/identity/2026-09-29-identity-modules-1-2-3-status.html",
+      "createdAt": "2026-09-29",
+      "updatedAt": "2026-09-29"
     }
   ]
 }
