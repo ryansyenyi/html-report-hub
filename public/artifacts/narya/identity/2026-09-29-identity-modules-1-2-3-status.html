@@ -84,13 +84,14 @@ footer{font-size:12px;color:var(--offblack);max-width:1200px;margin:0 auto;paddi
     <svg viewBox="0 0 190.73 218.12" aria-label="PMA"><defs><radialGradient id="rg" cx="188.75" cy="24.98" r="180.91" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fbb746"/><stop offset="1" stop-color="#ef6d87"/></radialGradient></defs><path fill="url(#rg)" d="M80.29,64.11L50.72,0h27.57l17.9,67.78L113.61,0h28.43l-30.66,64.31c-2.85,5.98-8.880,9.78-15.5,9.78h0c-6.7,0-12.79-3.9-15.590-9.98ZM103.98,88.74h0c-3.31,5.73-3.030,12.86.72,18.31l40.37,58.71,14.22-24.62-49.98-48.98,67.64,18.39,13.78-23.88-70.31-6.45c-6.67-.61-13.09,2.71-16.44,8.51ZM87.25,88.43h0c-3.31-5.73-9.62-9.05-16.22-8.53L0,85.5l14.22,24.62,67.41-18.8-49.75,49.39,13.78,23.88,40.74-57.67c3.87-5.47,4.2-12.69.85-18.49Z"/><g fill="#ef6d87"><path d="M33.55,179.63h15.73c9.18,0,14.74,5.44,14.74,13.31v.11c0,8.91-6.93,13.53-15.56,13.53h-6.43v11.55h-8.47v-38.49ZM48.73,199.04c4.23,0,6.71-2.53,6.71-5.83v-.11c0-3.79-2.640-5.83-6.87-5.83h-6.54v11.770h6.71Z"/><path d="M72.3,179.63h4.2c3.06,0,5.91,1.58,7.53,4.18l7.52,12.09,7.52-12.09c1.62-2.6,4.46-4.18,7.53-4.18h4.2v38.49h-8.41v-25.13l-10.830,16.44h-.22l-10.72-16.28v24.96h-8.3v-38.49Z"/><path d="M137.06,179.91h0c-2.33,0-4.44,1.39-5.36,3.54l-14.76,34.67h10.73l9.27-32.62,9.27,32.62h10.94l-14.76-34.67c-.91-2.15-3.02-3.54-5.36-3.54Z"/></g></svg>
     <div>
       <h1>Narya Identity: Modules 1, 2 and 3</h1>
-      <p>Where we stand on the road to a live identity service · as of 29 Sep 2026 (backend main <code>5e5f037f</code>)</p>
+      <p>Where we stand on the road to a live identity service · as of 29 Sep 2026, 13:50 MYT (backend main <code>5e5f037f</code>, deployed to staging)</p>
     </div>
   </div>
   <nav id="tabs">
     <button data-tab="overview" class="active">Overview</button>
     <button data-tab="plan">Consolidated plan</button>
     <button data-tab="modules">By module</button>
+    <button data-tab="sessions">Who's on what</button>
     <button data-tab="demo">Demo readiness</button>
     <button data-tab="risks">Risks &amp; asks</button>
   </nav>
@@ -101,7 +102,15 @@ footer{font-size:12px;color:var(--offblack);max-width:1200px;margin:0 auto;paddi
 <section id="overview" class="active">
   <div class="card callout">
     <h3>The short version</h3>
-    <p style="margin:0">The groundwork is finished. Module 1 gave us one clear idea of "who is calling". Module 2 locked down the front door and added partner integration keys, which operators can already manage from the portal. The new <b>identity service is built and running on staging, but no traffic reaches it yet</b>: every portal login still goes through Core. The next milestones are to switch traffic over, run the staging cut-over with a soak of at least 14 days, and then remove the old identity code from Core. <b>Production has no deployment set up for any service</b>, identity-svc included.</p>
+    <p style="margin:0">The groundwork is finished. Module 1 gave us one clear idea of "who is calling". Module 2 locked down the front door and added partner integration keys, which operators can already manage from the portal. The new <b>identity service is built and running on staging, but no traffic reaches it yet</b>: every portal login still goes through Core. The switch-over code is now being written: S5 is open as a green PR waiting on H21, and S6a–c and the S8 cut-over scripts are in flight. After that come the staging cut-over with a soak of at least 14 days, and then removal of the old identity code from Core. <b>Production has no deployment set up for any service</b>, identity-svc included.</p>
+  </div>
+  <div class="card callout purple">
+    <h3>What changed since this morning</h3>
+    <ul style="margin:0">
+      <li><b>Module 2 code is finished and deployed.</b> #583, #584 and #585 merged, and all four services run <code>5e5f037f</code> on staging. The BFF now sends its delegate key on every Core call. Your staging check and the close-out decisions are what remain.</li>
+      <li><b>Module 3 moved into the switch-over.</b> #590 (S5, ForwardAuth on identity-svc) is open and green but can't merge until H21 is signed. #593 (S6b, Core switch) is open into the <code>m3-flip</code> branch. S6a, S6c, S8b–S8d and a DR test harness (TMS-460) are being built.</li>
+      <li><b>Build host incident.</b> Two reboots (09:38 and 11:39) left empty git objects in the shared backend-narya store. Module 2 work was rebuilt from GitHub with nothing lost. The S6b branch lost one unpushed commit (<code>69d3f410</code>); #593 was opened afterwards, but check that nothing from that commit is missing.</li>
+    </ul>
   </div>
 
   <h2>Road to the goal</h2>
@@ -118,7 +127,7 @@ footer{font-size:12px;color:var(--offblack);max-width:1200px;margin:0 auto;paddi
 
   <h2>Progress by module</h2>
   <div class="kpis" id="kpis"></div>
-  <p class="muted">The two bars measure different things. <b>Plane</b> is the ticket state on the board. <b>Code</b> means the work is merged to <code>main</code>. The board is behind the code on 15 tickets across Modules 2 and 3 (see Risks &amp; asks).</p>
+  <p class="muted">The two bars measure different things. <b>Plane</b> is the ticket state on the board. <b>Code</b> means the work is merged to <code>main</code>. The board is behind the code on 19 tickets across Modules 2 and 3 (see Risks &amp; asks).</p>
 
   <h2>What changes for a user, and when</h2>
   <div class="grid2">
@@ -151,6 +160,32 @@ identity-svc → Core: signed assertion (≤30 s), Core keeps authorization</div
   <div id="modcards"></div>
 </section>
 
+<!-- SESSIONS -->
+<section id="sessions">
+  <h2>Who's working on what</h2>
+  <p class="muted" style="margin-top:-6px">Agent sessions from Orca, read at 13:50 MYT. Each identity module has its own worktree on the Linux build host; builder sub-agents run inside the Module 3 session.</p>
+  <div class="card"><table><thead><tr><th>Session (Orca worktree)</th><th>State</th><th>Last activity</th><th>Working on</th></tr></thead><tbody>
+    <tr><td class="id">Identity Module 3<div class="muted">backend-narya · branch <code>hind</code></div></td><td><span class="chip c-prog">Working</span></td><td class="muted">13:48 MYT</td><td><ul style="margin:0">
+      <li><b>S8b + S8c</b> (TMS-353, 354): green and pushing; a combined PR opens into the second main slot next.</li>
+      <li><b>S8d</b> (TMS-355): restacked onto the final scripts; builder-c3 is closing DR-O11's missing seed.</li>
+      <li><b>TMS-460</b> DR scenario harness (for TMS-355's "full seeds" criterion): builder-a2 started it.</li>
+      <li><b>S6a</b> (TMS-347): builder-b is fixing review findings (comments, coverage, the 504 golden row).</li>
+      <li><b>S6c</b> (TMS-349) and <b>TMS-459</b> (identity-svc metrics): queued for full verification.</li>
+      <li>Open PRs: <b>#590</b> S5 into main (green, waiting on H21); <b>#593</b> S6b into <code>m3-flip</code> (green).</li>
+      <li>Branch <code>tms-361-m3-s10b-core-value-test</code>: two new commits proving E3-61's <code>core</code> value (TMS-361).</li></ul></td></tr>
+    <tr><td class="id">Identity Module 2<div class="muted">backend-narya · branch <code>albacore</code></div></td><td><span class="chip c-lag">Waiting on you</span></td><td class="muted">13:41 MYT</td><td><ul style="margin:0">
+      <li>Code finished and live on staging: #583, #584, #585 merged; two of three infra-ansible PRs merged.</li>
+      <li>Left for you: staging checks and the close-out decisions.</li>
+      <li><b>TMS-419</b> (REG-33 metric alert): converge and alert drill done, stays In Progress. Proposes a second rule, <code>NaryaBFFDelegateOutsideRoutes</code>, as an infra-ansible PR for your review.</li>
+      <li><b>TMS-268</b> follow-ups found unfinished behind its Done state: ADR-0130 rollback citation, the ledger's missing <code>removal_adr</code>, and the four migration stages as separate slices.</li>
+      <li>Reported the git-object damage from the two host reboots.</li></ul></td></tr>
+    <tr><td class="id">Identity Module 1<div class="muted">backend-narya · branch <code>brill</code></div></td><td><span class="chip c-todo">Inactive</span></td><td class="muted">28 Sep, 08:24 MYT</td><td>No agent running. The four hygiene follow-ups (TMS-373…376) have no owner yet.</td></tr>
+    <tr><td class="id">cetacean<div class="muted">html-report-hub</div></td><td><span class="chip c-done">Done</span></td><td class="muted">12:07 MYT</td><td>Published this morning's version of this report to html-report-hub. That copy is now out of date.</td></tr>
+    <tr><td class="id">general<div class="muted">backend-spark (Windows)</div></td><td><span class="chip c-prog">Working</span></td><td class="muted">now</td><td>This status report.</td></tr>
+  </tbody></table></div>
+  <p class="muted">Not identity work: <b>mudskipper</b> (CI cost and release gate, TMS-424…426) and four idle local Claude sessions on the Windows laptop (started ~14 h ago).</p>
+</section>
+
 <!-- DEMO -->
 <section id="demo">
   <h2>What we can demo, and what we can't yet</h2>
@@ -161,7 +196,7 @@ identity-svc → Core: signed assertion (≤30 s), Core keeps authorization</div
   </ul></div>
   <div class="card demo-caveat"><h3>Show only with a caveat</h3><ul>
     <li><b>Portal login.</b> It works, but Core still serves it. Say so explicitly. Don't present it as "login now runs on identity-svc".</li>
-    <li><b>The BFF delegate key on every Core call</b> (ADR-0139, #585, merged <b>today</b>). Staging must carry the delegate key on both the BFF and Core, or every portal call fails. Smoke-test staging login before the demo.</li>
+    <li><b>The BFF delegate key on every Core call</b> (ADR-0139, #585, deployed to staging today). If either the BFF or Core lacks the key, every portal call fails. Smoke-test staging login before the demo.</li>
     <li><b>Integration keys on the public edge.</b> The edge rate limits (TMS-265) must be deployed on staging before you call it from outside the cluster.</li>
   </ul></div>
   <div class="card demo-no"><h3>Not demo-able yet</h3><ul>
@@ -226,8 +261,11 @@ const W = [
    ['TMS-251/252/253','REG-30 checks, credential redaction, deploy attestation','done','Done','gitops #165, #156; #550 (withdrawn by ADR-0137)'],
    ['TMS-254/259/325/326','Caller search, alerts on authz signals, matrix through mount.New, boot refuses reserved key format','done','Done','#516, #481, #518, #489'],
    ['TMS-255','Session headers and static admin key refused at the public edge','lag','In Progress','#531, #564 merged: close the ticket'],
-   ['TMS-257','BFF sends its delegate key on every Core call (ADR-0139)','lag','In Progress','#569…#585 merged. #585 merged today; confirm on staging'],
-   ['TMS-260','Close the table: build check, rollback runbook, REG-45 audit','lag','In Progress','#585 merged; REG-45 audit status unknown'],
+   ['TMS-257','BFF sends its delegate key on every Core call (ADR-0139)','lag','In Progress','#569…#585 merged; on staging since 09-29 (5e5f037f). Awaiting your staging check'],
+   ['TMS-260','Close the table: build check, rollback runbook, REG-45 audit','lag','In Progress','#585 merged and deployed; REG-45 audit status unknown'],
+   ['TMS-413/418','FU · duplicate Authorization header refused; BFFSessionDelegateTenant confined off 15 unused keyed rows','lag','In Progress','#583 merged'],
+   ['TMS-417','FU · flaky outbox relay test on a fixed 600 ms window','lag','In Progress','#583 merged'],
+   ['TMS-419','FU · REG-33: the out-of-route delegate alert gets a metric','prog','In Progress','Converge + drill done; second alert rule proposed as an infra-ansible PR'],
    ['TMS-258','mTLS / workload-identity decision and plan','done','Done','Plan only'],
    ['TMS-274','NetBird membership export and owner attestation','defer','Backlog','Due 2026-12-20'],
    ['TMS-275','Implement the mTLS plan (in-cluster mutual auth)','defer','Backlog','Due 2026-12-20'],
@@ -242,7 +280,8 @@ const W = [
    ['TMS-265','Rate limits, then public exposure (ADR-0129/0132)','lag','In Progress','#520, #533, #564 merged. Confirm on staging'],
    ['TMS-269','2c operator UI: issue, list, revoke','done','Done','web-narya #217'],
    ['TMS-400','Keys list shows each key\'s anchor','lag','In Progress','web-narya #230 merged 09-27'],
-   ['TMS-268','Converge legacy tenant keys onto integration keys','prog','Done (plan)','#509 is the plan only; convergence not built'],
+   ['TMS-410','FU · Core admits an integration key at the public edge only through the rate-limited router','lag','In Progress','#583 merged'],
+   ['TMS-268','Converge legacy tenant keys onto integration keys','prog','Done (plan)','#509 is the plan only. Open: ADR-0130 rollback citation, ledger removal_adr, 4 stages as slices'],
   ]},
  {n:4,mod:'M3',title:'Build identity-svc (runs dark on staging)',sub:'Module 3 · TMS-327 S0–S4, S10',state:'lag',
   why:'The new service owns persons, logins, sessions, passwords and signing keys, with its own database. It is built and deployed to staging, and Core can already verify its signed assertions. Nothing sends it traffic yet.',
@@ -258,30 +297,32 @@ const W = [
    ['TMS-344','S4d · audit path into audit_log','done','Done','#582; gitops #184'],
    ['TMS-345','S4e · bootstrap split and identityreconcile','lag','In Progress','#581 merged 09-29'],
    ['TMS-360','S10a · portal never signs out on an outage, incl. cold load','done','Done','web-narya #220'],
-   ['TMS-361','S10b · minimal delegation chain','lag','In Progress','#579'],
+   ['TMS-361','S10b · minimal delegation chain','lag','In Progress','#579; follow-up branch proves E3-61 value (not yet a PR)'],
    ['TMS-423/443','Migration backfill label; password race flake','done','Done','#552, #580'],
    ['TMS-457','E3-104 · TTL 503 flake on CI','todo','Backlog','Undiagnosed'],
    ['TMS-362','S10c · D2 risk review','todo','Backlog',''],
   ]},
- {n:5,mod:'M3',title:'Switch traffic to identity-svc (the flip)',sub:'Module 3 · S5, S6a–c, S6, S7',state:'blocked',
-  why:'This is where users start logging in through identity-svc: Traefik ForwardAuth and the BFF point at it, and Core stops handling login and session. It cannot start until H21 is signed, and the epic also lists the TMS-237 golden matrix as a gate.',
+ {n:5,mod:'M3',title:'Switch traffic to identity-svc (the flip)',sub:'Module 3 · S5, S6a–c, S6, S7',state:'prog',
+  why:'This is where users start logging in through identity-svc: Traefik ForwardAuth and the BFF point at it, and Core stops handling login and session. The code is now being written, but nothing reaches main until H21 is signed. The S6 slices land on the m3-flip branch first and merge to main together.',
   items:[
    ['H21','Sign-off gate before the minter wiring (S5) merges','blocked','n/a','Checklist in #554, unsigned'],
-   ['TMS-346','S5 · ForwardAuth and edge CSRF on identity-svc','blocked','Backlog','ForwardAuth listener exists but serves no routes'],
-   ['TMS-347','S6a · BFF relay rewritten to call identity-svc','todo','Backlog','BFF talks only to Core today'],
-   ['TMS-348','S6b · Core switch for admin writes and revocation','todo','Backlog','Relink and reset-password still local in Core'],
-   ['TMS-349','S6c · Core bootstrap half and local dev path','todo','Backlog',''],
-   ['TMS-350','S6 · integrate and verify the flip PR','todo','Backlog','Branch m3-flip is empty'],
+   ['TMS-346','S5 · ForwardAuth and edge CSRF on identity-svc','blocked','Backlog','#590 open, checks green, waiting on H21'],
+   ['TMS-347','S6a · BFF relay rewritten to call identity-svc','prog','Backlog','Built; fixing review findings'],
+   ['TMS-348','S6b · Core switch for admin writes, suspension and revocation','prog','Backlog','#593 open into m3-flip, checks green'],
+   ['TMS-349','S6c · Core bootstrap half and local dev path','prog','Backlog','Queued for full verification'],
+   ['TMS-350','S6 · integrate and verify the flip PR','todo','Backlog','m3-flip has no commits yet; #593 is the first'],
    ['TMS-351','S7 · edge prep and alerts','todo','Backlog',''],
+   ['TMS-459','identity-svc metrics for argon2 slot saturation and sign-in outcomes (E3-72 alerts)','prog','Backlog','Queued for full verification'],
    ['config','Core staging config: IDENTITY_* and internal S2S keys','todo','No ticket found','Not present in core-api staging overlay'],
   ]},
  {n:6,mod:'M3',title:'Staging cut-over, soak and rollback proof',sub:'Module 3 · S8a–S8g',state:'prog',
   why:'Data moves once (a single flip that revokes every session), followed by a soak of at least 14 days with a tested rollback and a restore drill. Sign-off on S8g is what allows the cleanup.',
   items:[
    ['TMS-352','S8a · flip scripts 1, 2, 6, 8','done','Done','#578'],
-   ['TMS-353','S8b · script 5 and the delta report','todo','Backlog','Next in line'],
-   ['TMS-354','S8c · scripts 3, 4, 7, 9 and the purge','todo','Backlog',''],
-   ['TMS-355','S8d · DR runbooks and cut-over Jobs','todo','Backlog','Next in line'],
+   ['TMS-353','S8b · script 5 and the delta report','prog','Backlog','Green; combined PR with S8c opening next'],
+   ['TMS-354','S8c · scripts 3, 4, 7, 9 and the purge','prog','Backlog','Green; combined PR with S8b opening next'],
+   ['TMS-355','S8d · DR runbooks and cut-over Jobs','prog','Backlog','Restacked on final scripts; closing DR-O11 seed'],
+   ['TMS-460','DR scenario harness: run the DR "full" seeds end to end (TMS-355 criterion)','prog','Backlog','Filed and started today'],
    ['TMS-356','S8e · load test and rollback drill','todo','Backlog','Watch staging CPU (see Risks)'],
    ['TMS-357','S8f · cut-over F1–F6 on staging','todo','Backlog',''],
    ['TMS-358','S8g · soak (≥14 days), restore drill, sign-off','todo','Backlog','Takes at least 14 calendar days'],
@@ -309,8 +350,8 @@ const PATH = [
   ['Module 2a','Hardened front door','done',2],
   ['Module 2b/c','Partner keys + UI','done',3],
   ['M3 build','identity-svc on staging (dark)','done',4],
-  ['M3 flip','Traffic moves to identity-svc','blocked',5,true],
-  ['M3 cut-over','Staging flip + 14-day soak','todo',6],
+  ['M3 flip','Traffic moves to identity-svc','prog',5,true,'In progress · H21 gate'],
+  ['M3 cut-over','Staging flip + 14-day soak','prog',6],
   ['M3 cleanup','Remove identity from Core','todo',7],
   ['Production','Go live','todo',8],
 ];
@@ -318,22 +359,25 @@ const MODS = [
   {k:'M1',name:'Module 1 — One Principal',epic:'TMS-216',plane:[15,19],code:[15,19],note:'Build complete, epic closed 2026-09-25. The four open follow-ups (TMS-373…376) are code and test hygiene spun out of TMS-291; none affects users or the demo.',ws:[1]},
   {k:'M2a',name:'Module 2a — Credential registry and route collapse',epic:'TMS-234',plane:[22,27],code:[25,27],note:'All code merged. Three tickets only need closing. The remaining two (NetBird attestation, mTLS) are due 2026-12-20. Two duplicate tickets were cancelled and are excluded.',ws:[2]},
   {k:'M2b',name:'Module 2b/2c — Integration keys and operator UI',epic:'TMS-235',plane:[8,10],code:[10,10],note:'Backend and portal UI merged. Converging legacy tenant keys (TMS-268) is planned but not built.',ws:[3]},
-  {k:'M3',name:'Module 3 — Extract identity into identity-svc',epic:'TMS-327',plane:[11,36],code:[21,36],note:'Build phase done and deployed dark on staging. Flip, cut-over and cleanup not started. Epic still in Backlog on the board.',ws:[4,5,6,7]},
+  {k:'M3',name:'Module 3 — Extract identity into identity-svc',epic:'TMS-327',plane:[11,38],code:[21,38],note:'Build phase done and deployed dark on staging. Flip (S5, S6a–c) and cut-over scripts (S8b–d) are in flight; nothing merged to main since #582. Cleanup not started. Epic still in Backlog on the board.',ws:[4,5,6,7]},
 ];
 const RISKS = [
   ['h','The demo could imply "login runs on identity-svc", which it does not','Stakeholders take away a wrong expectation','Use the narrative on the Demo tab; show identity-svc as running dark'],
-  ['h','#585 (BFF delegate key on every Core call) merged today','If staging lacks the key on the BFF or Core, every portal call fails during the demo','Confirm the deployed tag and the delegate-key secret, then smoke-test login'],
+  ['h','#585 (BFF delegate key on every Core call) deployed to staging today (5e5f037f)','If the delegate-key secret is missing on the BFF or Core, every portal call fails during the demo','Run the Module 2 staging check: sign in and exercise the portal before the demo'],
+  ['m','Two host reboots (09:38, 11:39) left empty git objects in the shared backend-narya store','S6b lost one unpushed commit (69d3f410); fetch in that repo failed until repaired','Confirm #593 contains everything from 69d3f410'],
+  ['m','infra-ansible PRs wait on your review: the Grafana runbook (#158) and the proposed NaryaBFFDelegateOutsideRoutes rule','TMS-419 and the alert report stay open','Review and merge, then converge'],
   ['h','H21 sign-off is unsigned and gates S5, the start of the flip','The whole flip, cut-over and cleanup chain waits on it','Name the signer and set a date'],
   ['m','Cleanup (S9) needs a staging soak of at least 14 days after cut-over','The earliest cleanup date is cut-over + 14 days + drills','Set expectations on the timeline, not on effort'],
   ['m','Staging runs on one node (1950m CPU allocatable); identity-svc caused a CPU-starvation incident on 09-28','Real argon2 login load after the flip may starve the node again','Size capacity before S8e; the fix cut the request to 10m with 1 replica'],
   ['m','No production overlay exists for any service','"Live" means staging only','Agree on a production target and owner'],
-  ['m','Plane lags the code on 15 tickets','The board under-reports progress in the meeting','Close the tickets listed below'],
+  ['m','Plane lags the code on 19 tickets','The board under-reports progress in the meeting','Close the tickets listed below'],
   ['l','TMS-457 TTL 503 flake on CI, undiagnosed','Slows merges on the flip branch','Diagnose before S6'],
   ['l','Legacy tenant keys still sit alongside integration keys (TMS-268 is plan only)','Two partner-key systems remain','Schedule the convergence after the flip'],
   ['l','In-cluster callers are not mutually authenticated (mTLS, due 2026-12-20)','Accepted until December per the plan','Track TMS-274/275'],
 ];
 const ASKS = [
-  'Sign off <b>H21</b> so S5 can merge. It unblocks the whole flip.',
+  'Sign off <b>H21</b> so S5 (#590, already green) can merge. It unblocks the whole flip.',
+  'Run the <b>Module 2 staging check</b> and make its close-out decisions, so TMS-234 and TMS-235 can close.',
   'Agree on what the demo claims: <b>partner keys and a hardened front door are live on staging</b>, and identity-svc is built and running dark. The login migration comes next.',
   'Accept that <b>Core cleanup comes after a staging soak of at least 14 days</b> following cut-over. This is a deliberate safety window, not slack.',
   'Name an owner and timeline for <b>production environments</b>. None exist yet for any service.',
@@ -344,7 +388,7 @@ const $=s=>document.querySelector(s);
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
 function show(t){document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('section').forEach(s=>s.classList.toggle('active',s.id===t));scrollTo(0,0)}
 const cls={done:'s-done',lag:'s-done',prog:'s-prog',todo:'s-todo',blocked:'s-blocked',defer:'s-defer'};
-$('#path').innerHTML=PATH.map(p=>`<div class="step ${cls[p[2]]} ${p[4]?'you':''}" data-ws="${p[3]}"><b>${p[0]}</b>${p[1]}<span class="st">${L[p[2]]}</span></div>`).join('');
+$('#path').innerHTML=PATH.map(p=>`<div class="step ${cls[p[2]]} ${p[4]?'you':''}" data-ws="${p[3]}"><b>${p[0]}</b>${p[1]}<span class="st">${p[5]||L[p[2]]}</span></div>`).join('');
 document.querySelectorAll('.step').forEach(s=>s.onclick=()=>openWs(+s.dataset.ws));
 function bar(a,b,c){return `<div class="bar"><span style="width:${a/b*100}%;background:${c}"></span></div>`}
 $('#kpis').innerHTML=MODS.map(m=>`<div class="kpi" data-ws="${m.ws[0]}"><div class="label">${m.k} · ${m.epic}</div><div class="big">${m.code[0]}/${m.code[1]}</div><div class="sub">merged in code</div>${bar(m.code[0],m.code[1],'var(--done)')}<div class="sub">Plane: ${m.plane[0]}/${m.plane[1]} Done</div>${bar(m.plane[0],m.plane[1],'var(--purple)')}</div>`).join('');
